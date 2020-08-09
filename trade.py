@@ -8,6 +8,7 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 import time
 import dateutil
 import json
+
 pd.set_option('display.width', 1500)
 pd.set_option('display.max_rows', 150)
 pd.set_option('display.max_columns', 50)
@@ -17,19 +18,21 @@ sheet1 = 'Portfolio'
 sheet2 = 'sold stock'
 sheet3 = 'NSEDATA'
 sheet4 = 'UPSTOX_DATA'
+
+
 def read_excel_file_calc():
     df = pd.read_excel(excel_read_file, sheet_name='Output')
     df3 = df.copy()
     df = df[['Company', 'Side', 'Qty', 'Price']]
     df['Total'] = df['Qty'] * df['Price']
     # df = df.set_index(['Company', 'Side'])
-    df = df.groupby(['Company', 'Side'])[['Qty','Total']].apply(sum).unstack().reset_index()
+    df = df.groupby(['Company', 'Side'])[['Qty', 'Total']].apply(sum).unstack().reset_index()
 
     df = df.to_numpy()
     df = pd.DataFrame(df)
     df = df.fillna(0)
 
-    df = df.rename(columns={0:'Company Name', 1:'Qty_Buy', 2:'Qty_Sell', 3:'Total_Buy_Amt', 4:'Total_Sell_Amt'})
+    df = df.rename(columns={0: 'Company Name', 1: 'Qty_Buy', 2: 'Qty_Sell', 3: 'Total_Buy_Amt', 4: 'Total_Sell_Amt'})
     df = df.sort_values(by=['Total_Sell_Amt'], ascending=True)
     df['Net_Quentity'] = df['Qty_Buy'] - df['Qty_Sell']
     df['Net_Quentity'].astype(int)
@@ -37,26 +40,22 @@ def read_excel_file_calc():
     df['Net_Amount'] = df['Total_Buy_Amt'] - df['Total_Sell_Amt']
     df['Buy_Average'] = df['Net_Amount'].div(df['Net_Quentity'].where(df['Net_Quentity'] != 0, np.nan))
     df = df.fillna(0)
-    df['Per'] = df['Net_Quentity']*df['Buy_Average']
-    df['Percent'] = np.where(df['Net_Quentity']!= 0, df['Net_Amount']*100 / df['Per'].sum(), 0)
+    df['Per'] = df['Net_Quentity'] * df['Buy_Average']
+    df['Percent'] = np.where(df['Net_Quentity'] != 0, df['Net_Amount'] * 100 / df['Per'].sum(), 0)
     df = df.drop(columns=['Per'])
     df = df.sort_values(by=['Percent'], ascending=False)
     df['Percent'].astype(int)
 
-    df1 = df[df['Net_Quentity']!= 0 ]
-    sum1 = df1['Net_Amount'].sum()
-    df1 = round(df1, 2)
-    df2 = df[df['Net_Quentity'] <= 0 ]
+    df1 = df[df['Net_Quentity'] != 0]
+    df2 = df[df['Net_Quentity'] <= 0]
     sum2 = df2['Net_Amount'].sum()
+
+    df2 = df2.append([{'Net_Quentity': 'Total Loss/Profit Rs.', 'Net_Amount': sum2}], ignore_index=True)
     df2 = round(df2, 2)
-    df1 = df1.append([{'Net_Quentity':'Total Invest Rs.','Net_Amount':sum1}], ignore_index=True)
-    df2 = df2.append([{'Net_Quentity':'Total Loss/Profit Rs.','Net_Amount':sum2}], ignore_index=True)
     return df1, df2, df3
 
 
-
 def data_get(url, headers, cookies):
-
     session = requests.session()
     # for cookie in cookie_dict:
     #     session.cookies.set(cookie, cookie_dict[cookie])
@@ -64,14 +63,15 @@ def data_get(url, headers, cookies):
     # r = requests.get(url=url)
     return dict
 
+
 def convert_rupee(val):
-    new_val = val.replace(",","")
+    new_val = val.replace(",", "")
     return float(new_val)
 
-def main(dict):
 
+def main(dict):
     df = pd.DataFrame(dict['data'])
-    df = df[['symbol','open','high','low','ltP','ptsC','per','trdVol','wkhi','wklo']]
+    df = df[['symbol', 'open', 'high', 'low', 'ltP', 'ptsC', 'per', 'trdVol', 'wkhi', 'wklo']]
     # df.set_index('symbol', inplace = True)
     df['open'] = df['open'].apply(convert_rupee)
     df['high'] = df['high'].apply(convert_rupee)
@@ -85,13 +85,14 @@ def main(dict):
 
     return df
 
+
 def as_text(value):
     if value is None:
         return ""
     return str(value)
 
-def populate_sheet(df, ws):
 
+def populate_sheet(df, ws):
     for r in dataframe_to_rows(df, index=False, header=True):
         ws.append(r)
 
@@ -117,19 +118,31 @@ def populate_sheet(df, ws):
         cell.style = 'Accent2'
     for column_cells in ws.columns:
         length = max(len(as_text(cell.value)) for cell in column_cells)
-        ws.column_dimensions[column_cells[0].column_letter].width = length * 1.2
+        ws.column_dimensions[column_cells[0].column_letter].width = length + 2
+
+
+def add_nse_data(port_df, nse_df):
+    df_mapping = pd.read_excel(excel_read_file, sheet_name='name_mapping')
+    port_df = port_df.merge(df_mapping, left_on='Company Name', right_on='company_name', how='left').drop(columns=['company_name'])
+    port_df = port_df.merge(nse_df, left_on='nse_name', right_on='symbol', how='left').drop(columns=['nse_name', 'symbol'])
+
+    port_df = port_df.fillna(0)
+    sum1 = port_df['Net_Amount'].sum()
+    port_df = port_df.append([{'Net_Quentity': 'Total Invest Rs.', 'Net_Amount': sum1}], ignore_index=True)
+    port_df = round(port_df, 2)
+    return port_df
 
 
 if __name__ == "__main__":
-
     url_midcap50 = 'https://www1.nseindia.com/live_market/dynaContent/live_watch/stock_watch/niftyMidcap50StockWatch.json'
     url_juniornifty = 'https://www1.nseindia.com/live_market/dynaContent/live_watch/stock_watch/juniorNiftyStockWatch.json'
     # url = 'https://www1.nseindia.com/live_market/dynaContent/live_watch/stock_watch/foSecStockWatch.json'
     url_nifty50 = 'https://www1.nseindia.com/live_market/dynaContent/live_watch/stock_watch/niftyStockWatch.json'
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
         "Accept-Language": 'en-US,en;q=0.9', "Accept-Encoding": 'gzip, deflate'}
-    cookie_dict = {'bm_sv': 'bm_sv=B683127B319CDEE635D5372C90911E65~9bcie0JgYimO/ip/zZyr7MogxfyXlHq+Tz5Ui7Zhe2uEabg2yRXR4tGEB6fLuPo5NOfwvNh+fLoL+24U2NS/6RnomTLCaKkqrvMGVymRDeXQvV0BPqISClZsOss1CDEbSSLSCr0PBEZlCovszNGVtGObdpFqxB7xlKx'}
-
+    cookie_dict = {
+        'bm_sv': 'bm_sv=B683127B319CDEE635D5372C90911E65~9bcie0JgYimO/ip/zZyr7MogxfyXlHq+Tz5Ui7Zhe2uEabg2yRXR4tGEB6fLuPo5NOfwvNh+fLoL+24U2NS/6RnomTLCaKkqrvMGVymRDeXQvV0BPqISClZsOss1CDEbSSLSCr0PBEZlCovszNGVtGObdpFqxB7xlKx'}
 
     df_nifty50 = main(data_get(url_nifty50, headers, cookie_dict))
     df_midcap50 = main(data_get(url_midcap50, headers, cookie_dict))
@@ -143,6 +156,7 @@ if __name__ == "__main__":
     df_row = df_row.drop(columns=['index'])
     df_row = df_row.sort_values(by=['per'], ascending=False)
     df1, df2, df3 = read_excel_file_calc()
+    df1 = add_nse_data(df1, df_row)
 
     wb = Workbook()
     # When you make a new workbook you get a new blank active sheet
@@ -163,4 +177,3 @@ if __name__ == "__main__":
     populate_sheet(df3, sheet4)
 
     wb.save(excel_out_file)
-
