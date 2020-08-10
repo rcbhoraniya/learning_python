@@ -22,7 +22,6 @@ sheet4 = 'UPSTOX_DATA'
 
 def read_excel_file_calc():
     df = pd.read_excel(excel_read_file, sheet_name='Output')
-    df3 = df.copy()
     df = df[['Company', 'Side', 'Qty', 'Price']]
     df['Total'] = df['Qty'] * df['Price']
     # df = df.set_index(['Company', 'Side'])
@@ -48,11 +47,8 @@ def read_excel_file_calc():
 
     df1 = df[df['Net_Quentity'] != 0]
     df2 = df[df['Net_Quentity'] <= 0]
-    sum2 = df2['Net_Amount'].sum()
-
-    df2 = df2.append([{'Net_Quentity': 'Total Loss/Profit Rs.', 'Net_Amount': sum2}], ignore_index=True)
-    df2 = round(df2, 2)
-    return df1, df2, df3
+    df2 = df2.drop(columns=['Net_Quentity', 'Buy_Average', 'Percent'])
+    return df1, df2
 
 
 def data_get(url, headers, cookies):
@@ -82,7 +78,9 @@ def main(dict):
     df['trdVol'] = df['trdVol'].apply(convert_rupee)
     df['wkhi'] = df['wkhi'].apply(convert_rupee)
     df['wklo'] = df['wklo'].apply(convert_rupee)
-
+    df = df.rename(
+        columns={'open': 'Open', 'high': 'High', 'low': 'Low', 'ltp': 'LTP', 'ptsC': 'Change', 'per': '%Change',
+                 'trdVol': 'Volume', 'wkhi': '52w H', 'wklo': '52w L'})
     return df
 
 
@@ -93,9 +91,10 @@ def as_text(value):
 
 
 def populate_sheet(df, ws):
+    dfrow = 1
     for r in dataframe_to_rows(df, index=False, header=True):
         ws.append(r)
-
+        dfrow += 1
     title_row = '1'
     value_cells = 'B2:{col}{row}'.format(
         col=get_column_letter(ws.max_column),
@@ -116,48 +115,60 @@ def populate_sheet(df, ws):
     for cell in ws[title_row]:
         # cell.style = 'Headline 2'
         cell.style = 'Accent2'
+
+    return ws, dfrow
+
+
+def cell_width_alignment(ws):
     for column_cells in ws.columns:
         length = max(len(as_text(cell.value)) for cell in column_cells)
-        ws.column_dimensions[column_cells[0].column_letter].width = length + 2
+        ws.column_dimensions[column_cells[0].column_letter].width = length + 3
 
 
 def add_nse_data(port_df, nse_df):
     df_mapping = pd.read_excel(excel_read_file, sheet_name='name_mapping')
-    port_df = port_df.merge(df_mapping, left_on='Company Name', right_on='company_name', how='left').drop(columns=['company_name'])
-    port_df = port_df.merge(nse_df, left_on='nse_name', right_on='symbol', how='left').drop(columns=['nse_name', 'symbol'])
+    port_df = port_df.merge(df_mapping, left_on='Company Name', right_on='company_name', how='left').drop(
+        columns=['company_name'])
+    port_df = port_df.merge(nse_df, left_on='nse_name', right_on='symbol', how='left').drop(
+        columns=['nse_name', 'symbol'])
 
     port_df = port_df.fillna(0)
-    sum1 = port_df['Net_Amount'].sum()
-    port_df = port_df.append([{'Net_Quentity': 'Total Invest Rs.', 'Net_Amount': sum1}], ignore_index=True)
+    # sum1 = port_df['Net_Amount'].sum()
+    # port_df = port_df.append([{'Net_Quentity': 'Total Invest Rs.', 'Net_Amount': sum1}], ignore_index=True)
     port_df = round(port_df, 2)
     return port_df
 
 
 if __name__ == "__main__":
-    url_midcap50 = 'https://www1.nseindia.com/live_market/dynaContent/live_watch/stock_watch/niftyMidcap50StockWatch.json'
-    url_juniornifty = 'https://www1.nseindia.com/live_market/dynaContent/live_watch/stock_watch/juniorNiftyStockWatch.json'
-    # url = 'https://www1.nseindia.com/live_market/dynaContent/live_watch/stock_watch/foSecStockWatch.json'
-    url_nifty50 = 'https://www1.nseindia.com/live_market/dynaContent/live_watch/stock_watch/niftyStockWatch.json'
+    # url_midcap50 = 'https://www1.nseindia.com/live_market/dynaContent/live_watch/stock_watch/niftyMidcap50StockWatch.json'
+    # url_juniornifty = 'https://www1.nseindia.com/live_market/dynaContent/live_watch/stock_watch/juniorNiftyStockWatch.json'
+    url = 'https://www1.nseindia.com/live_market/dynaContent/live_watch/stock_watch/nifty500StockWatch.json'
+    # url_nifty50 = 'https://www1.nseindia.com/live_market/dynaContent/live_watch/stock_watch/niftyStockWatch.json'
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
         "Accept-Language": 'en-US,en;q=0.9', "Accept-Encoding": 'gzip, deflate'}
     cookie_dict = {
         'bm_sv': 'bm_sv=B683127B319CDEE635D5372C90911E65~9bcie0JgYimO/ip/zZyr7MogxfyXlHq+Tz5Ui7Zhe2uEabg2yRXR4tGEB6fLuPo5NOfwvNh+fLoL+24U2NS/6RnomTLCaKkqrvMGVymRDeXQvV0BPqISClZsOss1CDEbSSLSCr0PBEZlCovszNGVtGObdpFqxB7xlKx'}
 
-    df_nifty50 = main(data_get(url_nifty50, headers, cookie_dict))
-    df_midcap50 = main(data_get(url_midcap50, headers, cookie_dict))
-    df_juniornifty = main(data_get(url_juniornifty, headers, cookie_dict))
+    # df_nifty50 = main(data_get(url_nifty50, headers, cookie_dict))
+    # df_midcap50 = main(data_get(url_midcap50, headers, cookie_dict))
+    # df_juniornifty = main(data_get(url_juniornifty, headers, cookie_dict))
+    df_row = main(data_get(url, headers, cookie_dict))
     # df_nifty50['M_Cap'] = 'Nifty 50'
     # df_midcap50['M_cap'] = 'Midcap50'
     # df_juniornifty['M_Cap'] = 'Nifty Ju'
     # df1 = df[df['per'] < -1]
 
-    df_row = pd.concat([df_nifty50, df_juniornifty, df_midcap50], ignore_index=True).reset_index()
-    df_row = df_row.drop(columns=['index'])
-    df_row = df_row.sort_values(by=['per'], ascending=False)
-    df1, df2, df3 = read_excel_file_calc()
+    # df_row = pd.concat([df_nifty50, df_juniornifty, df_midcap50], ignore_index=True).reset_index()
+    # df_row = pd.merge(df_row, df_stock_watch, on='symbol', how='outer')
+    # # df_row = df_row.merge(df_stock_watch, left_on='symbol', right_on='symbol', how='left')
+    # df_row = df_row.drop(columns=['index'])
+    df_row = df_row.sort_values(by=['%Change'], ascending=False)
+    df1, df2 = read_excel_file_calc()
     df1 = add_nse_data(df1, df_row)
-
+    df1 = round(df1, 2)
+    df2 = round(df2, 2)
+    df_row = round(df_row, 2)
     wb = Workbook()
     # When you make a new workbook you get a new blank active sheet
     # We need to delete it since we do not want it
@@ -166,14 +177,34 @@ if __name__ == "__main__":
     sheet1 = wb.create_sheet(title=sheet1)
     sheet2 = wb.create_sheet(title=sheet2)
     sheet3 = wb.create_sheet(title=sheet3)
-    sheet4 = wb.create_sheet(title=sheet4)
+    # sheet4 = wb.create_sheet(title=sheet4)
     sheet1.sheet_properties.tabColor = "1072BA"
     sheet2.sheet_properties.tabColor = "1072BA"
     sheet3.sheet_properties.tabColor = "1072BA"
-    sheet4.sheet_properties.tabColor = "1072BA"
-    populate_sheet(df1, sheet1)
-    populate_sheet(df2, sheet2)
-    populate_sheet(df_row, sheet3)
-    populate_sheet(df3, sheet4)
+    # sheet4.sheet_properties.tabColor = "1072BA"
+
+    ws1, dfrow1 = populate_sheet(df1, sheet1)
+    sum1 = df1['Net_Amount'].sum()
+    sum1 = round(sum1, 2)
+    ws1.cell(row=dfrow1 + 1, column=1, value='Total Investment Rs.').style = 'Total'
+    ws1.cell(row=dfrow1 + 1, column=2, value=sum1).style = 'Total'
+    cell_width_alignment(ws1)
+
+    ws2, dfrow2 = populate_sheet(df2, sheet2)
+    sum2 = df2['Net_Amount'].sum()
+    sum2 = round(sum2, 2)
+    if sum2 > 0:
+        ws2.cell(row=dfrow2 + 1, column=1, value='Total Loss Rs.').style = 'Total'
+        ws2.cell(row=dfrow2 + 1, column=2, value=sum2).style = 'Total'
+    else:
+        ws2.cell(row=dfrow2 + 1, column=1, value='Total Profit Rs.').style = 'Total'
+        ws2.cell(row=dfrow2 + 1, column=2, value=sum2).style = 'Total'
+    # df2 = df2.append([{'Net_Quentity': 'Total Loss/Profit Rs.', 'Net_Amount': sum2}], ignore_index=True)
+
+    cell_width_alignment(ws2)
+    ws3, dfrow3 = populate_sheet(df_row, sheet3)
+    cell_width_alignment(ws3)
+    # ws4, dfrow4 = populate_sheet(df3, sheet4)
+    # cell_width_alignment(ws4)
 
     wb.save(excel_out_file)
