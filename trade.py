@@ -1,10 +1,11 @@
 # noinspection PyUnresolvedReferences
 import pandas as pd
 import requests
-from openpyxl.utils import get_column_letter
 import numpy as np
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl.worksheet.table import Table, TableStyleInfo
+from openpyxl.utils import get_column_letter, column_index_from_string
 import time
 import dateutil
 import json
@@ -15,7 +16,7 @@ pd.set_option('display.max_columns', 50)
 excel_out_file = r'C:\Users\raj\Desktop\stock.xlsx'
 excel_read_file = r'C:\Users\raj\Desktop\my trade.xls'
 sheet1 = 'Portfolio'
-sheet2 = 'sold stock'
+sheet2 = 'sold_stock'
 sheet3 = 'NSEDATA'
 sheet4 = 'UPSTOX_DATA'
 
@@ -90,33 +91,36 @@ def as_text(value):
     return str(value)
 
 
-def populate_sheet(df, ws):
-    dfrow = 1
-    for r in dataframe_to_rows(df, index=False, header=True):
-        ws.append(r)
-        dfrow += 1
-    title_row = '1'
+def populate_sheet(dataframe, WorkSheet):
+    # dfrow = 1
+    for r in dataframe_to_rows(dataframe, index=False, header=True):
+        WorkSheet.append(r)
+
+
+    #     dfrow += 1
+    #
+    # title_row = '1'
     value_cells = 'B2:{col}{row}'.format(
-        col=get_column_letter(ws.max_column),
-        row=ws.max_row)
-    index_column = 'A'
+        col=get_column_letter(WorkSheet.max_column),
+        row=WorkSheet.max_row)
+    # index_column = 'A'
 
     # for general styling, one has to iterate over all cells individually
-    for row in ws[value_cells]:
+    for row in WorkSheet[value_cells]:
         for cell in row:
             cell.style = 'Normal'
             cell.number_format = '0.00'
-    # builtin or named styles can be applied by using the object or their name
-    # https://openpyxl.readthedocs.io/en/stable/styles.html#using-builtin-styles
-    for cell in ws[index_column]:
-        cell.style = 'Normal'
+    # # builtin or named styles can be applied by using the object or their name
+    # # https://openpyxl.readthedocs.io/en/stable/styles.html#using-builtin-styles
+    # for cell in ws[index_column]:
+    #     cell.style = 'Normal'
+    #
+    # # style header line last, so that headline style wins in cell A1
+    # for cell in ws[title_row]:
+    #     # cell.style = 'Headline 2'
+    #     cell.style = 'Accent2'
+    return WorkSheet
 
-    # style header line last, so that headline style wins in cell A1
-    for cell in ws[title_row]:
-        # cell.style = 'Headline 2'
-        cell.style = 'Accent2'
-
-    return ws, dfrow
 
 
 def cell_width_alignment(ws):
@@ -137,7 +141,17 @@ def add_nse_data(port_df, nse_df):
     # port_df = port_df.append([{'Net_Quentity': 'Total Invest Rs.', 'Net_Amount': sum1}], ignore_index=True)
     port_df = round(port_df, 2)
     return port_df
-
+def addtable(df, ws):
+    nrow, ncol = df.shape
+    title= ws.title
+    print(title)
+    # get_column_letter(27)
+    tab = Table(displayName= title, ref='A1:{col}{row}'.format(col= get_column_letter(ncol), row= nrow + 1))
+    # Add a default style with striped rows and banded columns
+    style = TableStyleInfo(name="TableStyleLight8")
+    tab.tableStyleInfo = style
+    ws.add_table(tab)
+    return  ws
 
 if __name__ == "__main__":
     # url_midcap50 = 'https://www1.nseindia.com/live_market/dynaContent/live_watch/stock_watch/niftyMidcap50StockWatch.json'
@@ -150,25 +164,15 @@ if __name__ == "__main__":
     cookie_dict = {
         'bm_sv': 'bm_sv=B683127B319CDEE635D5372C90911E65~9bcie0JgYimO/ip/zZyr7MogxfyXlHq+Tz5Ui7Zhe2uEabg2yRXR4tGEB6fLuPo5NOfwvNh+fLoL+24U2NS/6RnomTLCaKkqrvMGVymRDeXQvV0BPqISClZsOss1CDEbSSLSCr0PBEZlCovszNGVtGObdpFqxB7xlKx'}
 
-    # df_nifty50 = main(data_get(url_nifty50, headers, cookie_dict))
-    # df_midcap50 = main(data_get(url_midcap50, headers, cookie_dict))
-    # df_juniornifty = main(data_get(url_juniornifty, headers, cookie_dict))
     df_row = main(data_get(url, headers, cookie_dict))
-    # df_nifty50['M_Cap'] = 'Nifty 50'
-    # df_midcap50['M_cap'] = 'Midcap50'
-    # df_juniornifty['M_Cap'] = 'Nifty Ju'
-    # df1 = df[df['per'] < -1]
 
-    # df_row = pd.concat([df_nifty50, df_juniornifty, df_midcap50], ignore_index=True).reset_index()
-    # df_row = pd.merge(df_row, df_stock_watch, on='symbol', how='outer')
-    # # df_row = df_row.merge(df_stock_watch, left_on='symbol', right_on='symbol', how='left')
-    # df_row = df_row.drop(columns=['index'])
     df_row = df_row.sort_values(by=['%Change'], ascending=False)
     df1, df2 = read_excel_file_calc()
     df1 = add_nse_data(df1, df_row)
     df1 = round(df1, 2)
     df2 = round(df2, 2)
     df_row = round(df_row, 2)
+
     wb = Workbook()
     # When you make a new workbook you get a new blank active sheet
     # We need to delete it since we do not want it
@@ -183,27 +187,43 @@ if __name__ == "__main__":
     sheet3.sheet_properties.tabColor = "1072BA"
     # sheet4.sheet_properties.tabColor = "1072BA"
 
-    ws1, dfrow1 = populate_sheet(df1, sheet1)
+    ws1 = populate_sheet(df1, sheet1)
+    dfrow1, dfcol1 = df1.shape
     sum1 = df1['Net_Amount'].sum()
     sum1 = round(sum1, 2)
-    ws1.cell(row=dfrow1 + 1, column=1, value='Total Investment Rs.').style = 'Total'
-    ws1.cell(row=dfrow1 + 1, column=2, value=sum1).style = 'Total'
+    ws1.cell(row=dfrow1 + 2, column=1, value='Total Investment Rs.').style = 'Total'
+    ws1.cell(row=dfrow1 + 2, column=2, value=sum1).style = 'Total'
+    ws1 = addtable(df1,ws1)
     cell_width_alignment(ws1)
 
-    ws2, dfrow2 = populate_sheet(df2, sheet2)
+
+    ws2 = populate_sheet(df2, sheet2)
+    dfrow2, dfcol2 = df2.shape
     sum2 = df2['Net_Amount'].sum()
     sum2 = round(sum2, 2)
     if sum2 > 0:
-        ws2.cell(row=dfrow2 + 1, column=1, value='Total Loss Rs.').style = 'Total'
-        ws2.cell(row=dfrow2 + 1, column=2, value=sum2).style = 'Total'
+        ws2.cell(row=dfrow2 + 2, column=1, value='Total Loss Rs.').style = 'Total'
+        ws2.cell(row=dfrow2 + 2, column=2, value=sum2).style = 'Total'
     else:
-        ws2.cell(row=dfrow2 + 1, column=1, value='Total Profit Rs.').style = 'Total'
-        ws2.cell(row=dfrow2 + 1, column=2, value=sum2).style = 'Total'
+        ws2.cell(row=dfrow2 + 2, column=1, value='Total Profit Rs.').style = 'Total'
+        ws2.cell(row=dfrow2 + 2, column=2, value=sum2).style = 'Total'
     # df2 = df2.append([{'Net_Quentity': 'Total Loss/Profit Rs.', 'Net_Amount': sum2}], ignore_index=True)
-
+    ws2 = addtable(df2, ws2)
     cell_width_alignment(ws2)
-    ws3, dfrow3 = populate_sheet(df_row, sheet3)
+
+
+    ws3 = populate_sheet(df_row, sheet3)
+    ws3 = addtable(df_row, ws3)
     cell_width_alignment(ws3)
+
+
+
+
+    '''
+    Table must be added using ws.add_table() method to avoid duplicate names.
+    Using this method ensures table name is unque through out defined names and all other table name. 
+    '''
+
     # ws4, dfrow4 = populate_sheet(df3, sheet4)
     # cell_width_alignment(ws4)
 
