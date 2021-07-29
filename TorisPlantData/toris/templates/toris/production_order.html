@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block container %}
+<div class="container">
+    <h3>Plant Production Order</h3>
+    <!--    {{orders}}-->
+    <div class="text-right mb-3">
+        <a class="text-success" href="{% url 'toris:export_production_order_csv' %}"><i class="fa fa-download" aria-hidden="true"></i>
+            Export File</a>
+    </div>
+    <table class="table table-sm">
+        <tr>
+            <thead class="thead-light">
+            <tr>
+                <th scope="col">product code</th>
+                <th scope="col">Reqd. Prod</th>
+                <th scope="col">color marking on bobin</th>
+                <th scope="col">tape color</th>
+                <th scope="col">denier</th>
+                <th scope="col">gramage</th>
+                <th scope="col">tape width</th>
+                <th scope="col">cutter spacing</th>
+                <th scope="col">streanth per tape in kg</th>
+                <th scope="col">elongation percent</th>
+                <th scope="col">streanth</th>
+                <th scope="col">tanacity</th>
+                <th scope="col">pp_percent</th>
+                <th scope="col">filler %</th>
+                <th scope="col">shiner %</th>
+                <th scope="col">color %</th>
+<!--                <th scope="col">tpt %</th>-->
+<!--                <th scope="col">uv %</th>-->
+<!--                <th scope="col">color name</th>-->
+
+
+            </tr>
+            </thead>
+            <tbody>
+            {{production_order}}
+            {% for order in orders %}
+            <tr>
+
+                <td>{{order.product_code}}</td>
+                <td>{{order.net_p}}</td>
+                <td>{{order.tape_color}}</td>
+                <td>{{order.color_marking_on_bobin}}</td>
+                <td>{{order.req_denier}}</td>
+                <td>{{order.req_gramage}}</td>
+                <td>{{order.req_tape_width}}</td>
+                <td>{{order.cutter_spacing}}</td>
+                <td>{{order.req_streanth_per_tape_in_kg}}</td>
+                <td>{{order.req_elongation_percent}}</td>
+                <td>{{order.streanth}}</td>
+                <td>{{order.tanacity}}</td>
+                <td>{{order.pp_percent}}</td>
+                <td>{{order.filler_percent}}</td>
+                <td>{{order.shiner_percent}}</td>
+                <td>{{order.color_percent}}</td>
+<!--                <td>{{order.tpt_percent}}</td>-->
+<!--                <td>{{order.uv_percent}}</td>-->
+<!--                <td>{{order.color_name}}</td>-->
+
+
+            </tr>
+            {% endfor %}
+            </tbody>
+    </table>
+</div>
+{% if is_paginated %}
+{% include "toris/pagination.html" %}
+{% endif %}
+{% endblock %}

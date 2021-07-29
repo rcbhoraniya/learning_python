@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block container %}
+
+<table class="table table-sm">
+    <tr>
+        <thead class="thead-light">
+            <tr>
+
+                <th scope="col">NSE Symbol</th>
+                <th scope="col">Name</th>
+                <th scope="col">Max Price</th>
+                <th scope="col">Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stock in all_search_results %}
+            <tr>
+
+                <td>{{stock.nse_symbol}}</td>
+                <td><a href="{% url 'stockapp:detail' stock.id stock.nse_symbol %}">{{ stock.name }}</a></td>
+                <td>{{stock.max_close}}</td>
+                <td>{{stock.date|date:'d-m-Y'}}</td>
+                <td>{{stock.close}}</td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+</table>
+
+
+
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block container %}
+<div class="container">
+    <h3>Order List</h3>
+    <table class="table table-sm">
+        <tr>
+            <thead class="thead-light">
+            <tr>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:order_sort_list' 'id' %}">Id</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:order_sort_list' 'order_date' %}">Date</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:order_sort_list' 'customer_name' %}">Customer Name</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:order_sort_list' 'product_code' %}">Product Code</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:order_sort_list' 'order_qty' %}">Order Qty</a></th>
+                <th></th>
+                <th><a class="btn btn-outline-success" href="{% url 'toris:order_create'  %}"><i
+                        class="fas fa-plus"></i>Add New </a></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for data in orderall %}
+            <tr>
+                <td><a class="text-dark" href="{{data.get_absolute_url}}">{{ data.id }}</a></td>
+                <td>{{data.order_date|date:'d-m-Y'}}</td>
+                <td>{{data.customer_name}}</td>
+                <td>{{data.product_code}}</td>
+                <td>{{data.order_qty}}</td>
+                <td><a href="{% url 'toris:order_update' data.id  %}"><i class="fas fa-edit fa-lg"></i></a></td>
+                <td><a href="{% url 'toris:order_delete' data.id  %}"><i class="far fa-trash-alt fa-lg text-danger"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block container %}
+{{ form.media }}
+{% load crispy_forms_tags %}
+<div class="container mt-3">
+    <div class="card text-center border-dark mb-3">
+        <h4 class="card-header">Order Delete #{{object.id}}</h4>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="alert alert-warning" role="alert">
+                    Are you sure you want to delete <strong>{{ object.id }}</strong> ?
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <a class="btn btn-primary" href="{% url 'toris:order_list' %}">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

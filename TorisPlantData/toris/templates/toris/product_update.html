@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block container %}
+{{ form.media }}
+{% load crispy_forms_tags %}
+<div class="container mt-3">
+    <div class="card text-center border-dark mb-3">
+        <h4 class="card-header">Product Update Form #{{product.product_code}}</h4>
+        <div class="card-body">
+            <form method="post">{% csrf_token %}
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <table>
+                                {% for field in form %}
+                                {% if forloop.counter <= 6 %}
+                                <tr>
+                                    <td>{{ field |as_crispy_field }}</td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </table>
+                        </div>
+                        <div class="col-lg-4">
+                            <table>
+                                {% for field in form %}
+                                {% if forloop.counter > 6 %}
+                                {% if forloop.counter <= 12 %}
+                                <tr>
+                                    <td>{{field|as_crispy_field}}</td>
+                                </tr>
+                                {% endif %}
+                                {% endif %}
+                                {% endfor %}
+                            </table>
+                        </div>
+                        <div class="col-lg-4">
+                            <table>
+                                {% for field in form %}
+                                {% if forloop.counter > 12 %}
+                                <tr>
+                                    <td>{{field|as_crispy_field}}</td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <input type="submit" class='btn btn-success' value="Submit">
+                    <a class="btn  btn-primary" href="{% url 'toris:product_list' %}">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

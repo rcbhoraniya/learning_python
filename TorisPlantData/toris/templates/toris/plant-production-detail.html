@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block container %}
+<div class="container mt-3">
+    <div class="card border-dark mb-3">
+        <div class="card-header">
+            <h3 class="card-title text-center">Production Details #{{plantdetailall.id}}</h3>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Date:</dt>
+                <dd class="col-sm-9">{{ plantdetailall.date }}</dd>
+                <dt class="col-sm-3">Plant Name:</dt>
+                <dd class="col-sm-9">{{ plantdetailall.plant }}</dd>
+                <dt class="col-sm-3">Shift:</dt>
+                <dd class="col-sm-9">{{ plantdetailall.shift }}</dd>
+                <dt class="col-sm-3">Operator Name:</dt>
+                <dd class="col-sm-9">{{ plantdetailall.operator_name }}</dd>
+                <dt class="col-sm-3">No of winderman:</dt>
+                <dd class="col-sm-9">{{ plantdetailall.no_of_winderman }}</dd>
+                <dt class="col-sm-3">Product Code:</dt>
+                <dd class="col-sm-9">{{ plantdetailall.product_code }}</dd>
+                <dt class="col-sm-3">End Reading:</dt>
+                <dd class="col-sm-9">{{ plantdetailall.end_reading }}</dd>
+                <dt class="col-sm-3">Start Reading:</dt>
+                <dd class="col-sm-9">{{ plantdetailall.start_reading }}</dd>
+                <dt class="col-sm-3">Wastage:</dt>
+                <dd class="col-sm-9">{{ plantdetailall.wastage }}</dd>
+            </dl>
+            <div class="text-center">
+                <a class="btn btn-primary" href="{% url 'toris:production_list' %}">Back</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

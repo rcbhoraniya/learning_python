@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block container %}
+<div class="container-fluid">
+    <h3>Product List</h3>
+    <table class="table  table-sm">
+        <tr>
+            <thead class="thead-light">
+            <tr>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'product_code' %}">Color Code</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'color_marking_on_bobin' %}">Color Marking on Bobin</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'tape_color' %}">Tape Color</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'req_denier' %}">Denier</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'req_gramage' %}">Gramage</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'req_tape_width' %}">Tape Width</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'cutter_spacing' %}">Cutter Spacing</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'req_streanth_per_tape_in_kg' %}">Streanth Per Tape in kg</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'req_elongation_percent' %}">Elongation %</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'streanth' %}">Streanth</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'tanacity' %}">Tanacity</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'pp_percent' %}">PP %</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'filler_percent' %}">Filler %</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'shiner_percent' %}">Shiner %</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'color_percent' %}">Color %</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'tpt_percent' %}">TPT %</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'uv_percent' %}">UV %</a></th>
+                <th scope="col"><a class="text-dark" href="{% url 'toris:product_sort_list' 'color_name' %}">Color Name</a></th>
+                <th></th>
+                <th><a class="btn btn-outline-success" href="{% url 'toris:product_create'  %}"><i
+                        class="fas fa-plus"></i>Add New </a></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for data in productall %}
+            <tr>
+                <td><a class="text-dark" href="{{data.get_absolute_url}}">
+                    {{ data.product_code}}</a></td>
+                <td>{{data.color_marking_on_bobin}}</td>
+                <td>{{data.tape_color}}</td>
+                <td>{{data.req_denier}}</td>
+                <td>{{data.req_gramage}}</td>
+                <td>{{data.req_tape_width}}</td>
+                <td>{{data.cutter_spacing}}</td>
+                <td>{{data.req_streanth_per_tape_in_kg}}</td>
+                <td>{{data.req_elongation_percent}}</td>
+                <td>{{data.streanth}}</td>
+                <td>{{data.tanacity}}</td>
+                <td>{{data.pp_percent}}</td>
+                <td>{{data.filler_percent}}</td>
+                <td>{{data.shiner_percent}}</td>
+                <td>{{data.color_percent}}</td>
+                <td>{{data.tpt_percent}}</td>
+                <td>{{data.uv_percent}}</td>
+                <td>{{data.color_name}}</td>
+                <td><a href="{% url 'toris:product_update' data.product_code %}"><i class="fas fa-edit fa-lg"></i></a>
+                </td>
+                <td><a href="{% url 'toris:product_delete' data.product_code  %}"><i
+                        class="far fa-trash-alt fa-lg text-danger"></i></a></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+    </table>
+</div>
+{% if is_paginated %}
+{% include "toris/pagination.html" %}
+{% endif %}
+
+{% endblock %}
