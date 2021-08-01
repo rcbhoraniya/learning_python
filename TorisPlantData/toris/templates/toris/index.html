@@ -1,51 +1,37 @@
 {% extends "base.html" %}
-
+{% block title %}Plant Production List{% endblock %}
+{% load django_tables2 %}
+{% render_table table %}
+{% load bootstrap4 %}
 {% block container %}
-<div class="container">
-    <h3>Plant Production List</h3>
 
-    <table class="table table-sm">
-        <tr>
-            <thead class="thead-light">
-            <tr>
-                <th scope="col"><a class="text-dark" href="{% url 'toris:plant_production_sort_list' 'id' %}">Sr.</a></th>
-                <th scope="col"><a class="text-dark" href="{% url 'toris:plant_production_sort_list' 'date' %}">Date</a></th>
-                <th scope="col"><a class="text-dark" href="{% url 'toris:plant_production_sort_list' 'plant' %}">Plant</a></th>
-                <th scope="col"><a class="text-dark" href="{% url 'toris:plant_production_sort_list' 'shift' %}">Shift</a></th>
-                <th scope="col"><a class="text-dark" href="{% url 'toris:plant_production_sort_list' 'operator_name' %}">Operator Name</a></th>
-                <th scope="col"><a class="text-dark" href="{% url 'toris:plant_production_sort_list' 'no_of_winderman' %}">No Of Winderman</a></th>
-                <th scope="col"><a class="text-dark" href="{% url 'toris:plant_production_sort_list' 'product_code' %}">Product Code</a></th>
-                <th scope="col"><a class="text-dark" href="{% url 'toris:plant_production_sort_list' 'end_reading' %}">End Reading</a></th>
-                <th scope="col"><a class="text-dark" href="{% url 'toris:plant_production_sort_list' 'start_reading' %}">Start Reading</a></th>
-                <th scope="col"><a class="text-dark" href="{% url 'toris:plant_production_sort_list' 'wastage' %}">Wastage</a></th>
-                <th></th>
-                <th><a class="btn btn-outline-success" href="{% url 'toris:production_create'  %}"><i
-                        class="fas fa-plus"></i>Add New </a></th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for data in productionall %}
 
-            <tr>
-                <td><a class="text-dark" href="{{data.get_absolute_url}}">{{data.id}}</a></td>
-                <td>{{data.date|date:'d-m-Y'}}</td>
-                <td>{{data.plant}}</td>
-                <td>{{data.shift}}</td>
-                <td>{{data.operator_name}}</td>
-                <td>{{data.no_of_winderman}}</td>
-                <td>{{data.product_code}}</td>
-                <td>{{data.end_reading}}</td>
-                <td>{{data.start_reading}}</td>
-                <td>{{data.wastage}}</td>
-                <td><a href="{% url 'toris:production_update' data.id  %}"><i class="fas fa-edit fa-lg"></i></a></td>
-                <td><a href="{% url 'toris:production_delete' data.id  %}"><i
-                        class="far fa-trash-alt fa-lg text-danger"></i></a></td>
-            </tr>
-            {% endfor %}
-            </tbody>
-    </table>
+<div class="container-fluid mt-3">
+    <h4>Plant Production List</h4>
+
+    {% if filter %}
+    <form action="" method="get" class="form form-inline">
+        {% bootstrap_form filter.form layout='inline' %}
+        <button type="submit" class="btn btn-primary ml-2 mt-1 mr-2">Filter</button>
+<!--        {% bootstrap_button 'filter' %}-->
+    </form>
+    {% endif %}
+    <a class="btn btn-outline-success mb-3 " href="{% url 'toris:production_create'  %}"><i
+                        class="fas fa-plus"></i>Add New </a>
+{% for format in view.export_formats %}
+    <div class="text-right mb-3">
+    <a  href="{% export_url format %}">
+        Download  <code>.{{ format }}</code>
+    </a>
+        </div>
+{% endfor %}
+    {% render_table table  %}
+
 </div>
-{% if is_paginated %}
-{% include "toris/pagination.html" %}
-{% endif %}
+
 {% endblock %}
+
+
+
+
+

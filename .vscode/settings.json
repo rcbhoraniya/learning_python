@@ -1,0 +1,6 @@
+{
+    "python.pythonPath": "venv385\\Scripts\\python.exe",
+    "editor.mouseWheelZoom": true,
+    "editor.wordWrap": "on",
+    "vue3snippets.enable-compile-vue-file-on-did-save-code": false
+}

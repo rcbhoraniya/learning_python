@@ -1,0 +1,15 @@
+venv385/*
+venv36/*
+*.xlsx
+*.xls
+credentials.json
+tutorial1/*
+project/*
+signalgenui/*
+project_student/*
+project_stock/*
+myproject1/*
+frontend1/*
+vue/*
+project_stock_vue/*
+

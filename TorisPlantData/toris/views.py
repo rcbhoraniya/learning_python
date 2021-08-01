@@ -16,19 +16,36 @@ from datetime import date, datetime, timedelta
 from django.db.models import OuterRef, Subquery
 from django.db.models.functions import Lower
 from django.db import connection
-
-
-class PlantProductionListView(ListView):
+from django_tables2 import SingleTableView
+from django_tables2 import SingleTableView
+from .tables import PlantProductionTable,PlantProductionFilter
+from django_filters.views import FilterView
+from django_tables2.views import SingleTableMixin
+from django_tables2.export.views import ExportMixin
+from django_tables2.export.export import TableExport
+class PlantProductionListView(ExportMixin,SingleTableMixin, FilterView):
     model = PlantProduction
+    table_class = PlantProductionTable
     template_name = 'toris/index.html'
-    context_object_name = 'productionall'
-    paginate_by = 20
-    success_url = reverse_lazy('toris:production_list')
+    filterset_class = PlantProductionFilter
+    table_pagination = {"per_page": 50 }
+    export_formats = ['xlsx', 'csv']
 
     def get_queryset(self):
-        production_list = PlantProduction.plant_production.all()
-        print(production_list.query)
-        return production_list
+        qs = self.model.objects.all().annotate(production =(F('end_reading') - F('start_reading')))
+        filtered_list = PlantProductionFilter(self.request.GET, queryset=qs)
+        return filtered_list.qs
+# class PlantProductionListView(ListView):
+#     model = PlantProduction
+#     template_name = 'toris/index.html'
+#     context_object_name = 'productionall'
+#     paginate_by = 20
+    # success_url = reverse_lazy('toris:production_list')
+
+    # def get_queryset(self):
+    #     production_list = PlantProduction.plant_production.all()
+    #     print(production_list.query)
+    #     return production_list
     # def get_queryset(self,*args,**kwargs):
     #     production_list = PlantProduction.objects.order_by(self.kwargs.get('date'))
     #     return production_list
@@ -55,11 +72,11 @@ class PlantProductionCreateView(CreateView):
 
 def load_start_reading(request):
     plant_id = request.GET.get('plant')
-    print(plant_id)
-    if plant_id == 1:
-        plant_id = 'TPF'
-    elif plant_id == 2:
-        plant_id = 'TPP'
+    # print(plant_id)
+    # if plant_id == 'TPF':
+    #     plant_id = 'TPF'
+    # elif plant_id == 'TPP':
+    #     plant_id = 'TPP'
     query = PlantProduction.objects.filter(plant=plant_id).order_by('end_reading')
     end_reading = query[len(query) - 1].end_reading
     print(end_reading)
@@ -207,11 +224,18 @@ class ProductionOrderListView(ListView):
         production_df = pd.DataFrame(production_groupby)
         production_order = production_df.merge(order_df, left_on='product_code', right_on='product_code',
                                             how='right')
-        production_order = production_order.replace([np.nan], 0)
+
+        # production_order = production_order.replace([np.nan], 0)
         production_order['net_p'] = production_order['sum_o']-production_order['sum_p']
         production_order = production_order[['product_code','net_p']]
+        # production_order = production_order.astype({'product_code': 'int', 'sum_p': 'float',
+        #      'sum_o': 'float', 'net_p': 'float'})
+        production_order.reset_index(drop=True)
+        production_order =production_order.dropna()
+        print(production_order)
         production_order = production_order.merge(product_df, left_on='product_code', right_on='product_code',
                                             how='left')
+
         production_order = production_order.sort_values(['net_p'])
         production_order=production_order.to_dict('records')
         return production_order

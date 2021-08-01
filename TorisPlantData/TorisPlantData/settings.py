@@ -37,8 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'toris',
     "bootstrap4",
+    "bootstrap5",
     "bootstrap_datepicker_plus",
     'crispy_forms',
+    "django_tables2",
+    'django_filters',
 
 ]
 

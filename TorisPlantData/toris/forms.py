@@ -1,4 +1,4 @@
-from .models import PlantProduction, Product, Order, Operator
+from .models import PlantProduction, Product, Order, Operator,Plant
 from django.forms import ModelForm
 from bootstrap_datepicker_plus import DatePickerInput
 from django import forms
@@ -15,6 +15,9 @@ class PlantProductionForm(forms.ModelForm):
         super(PlantProductionForm, self).__init__(*args, **kwargs)
         self.fields['shift'].empty_label = 'Select'
         self.fields['product_code'].empty_label = 'Select'
+        # variants = Plant.objects.all()
+        # products = [(i.id,i.name) for i in variants]
+        # self.fields['plant'] = forms.ChoiceField(choices=products,initial='')
         self.fields['plant'].empty_label = 'Select'
         self.fields['operator_name'].empty_label = 'Select'
         self.fields['date'].widget = DatePickerInput(format='%d/%m/%Y')

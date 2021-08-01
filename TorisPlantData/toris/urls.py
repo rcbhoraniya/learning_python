@@ -5,7 +5,7 @@ from . import views
 app_name = 'toris'
 urlpatterns = [
     path('', views.PlantProductionListView.as_view(), name='production_list'),
-    path('sort/plant-production/<str:data>/', views.PlantProductionSortView.as_view(), name='plant_production_sort_list'),
+    # path('sort/plant-production/<str:data>/', views.PlantProductionSortView.as_view(), name='plant_production_sort_list'),
     path('production-create/', views.PlantProductionCreateView.as_view(), name='production_create'),
     path('production-detail/<int:pk>/', views.PlantProductionDetailView.as_view(), name='production_detail'),
     path('production/<int:pk>/update/', views.ProductionUpdateView.as_view(), name='production_update'),
