@@ -1,9 +1,9 @@
 from django.urls import reverse_lazy
 import json
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView
-from .models import Product, PlantProduction, Order
+from .models import Product, PlantProduction, Order,Operator
 from django.http import HttpResponseRedirect, HttpResponse
-from .forms import PlantProductionForm, ProductForm, OrderForm
+from .forms import PlantProductionForm, ProductForm, OrderForm,OperatorForm
 from django.db.models import Avg, Max, Min, Sum, Count, F
 import pandas as pd
 import numpy as np
@@ -18,49 +18,27 @@ from django.db.models.functions import Lower
 from django.db import connection
 from django_tables2 import SingleTableView
 from django_tables2 import SingleTableView
-from .tables import PlantProductionTable,PlantProductionFilter
+from .tables import PlantProductionTable, ProductTable, OrderTable,ProductionOrderTable,OperatorTable
+from .filters import PlantProductionFilter, ProductFilter, OrderFilter,OperatorFilter
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 from django_tables2.export.views import ExportMixin
 from django_tables2.export.export import TableExport
-class PlantProductionListView(ExportMixin,SingleTableMixin, FilterView):
+
+
+class PlantProductionListView(ExportMixin, SingleTableMixin, FilterView):
     model = PlantProduction
     table_class = PlantProductionTable
     template_name = 'toris/index.html'
     filterset_class = PlantProductionFilter
-    table_pagination = {"per_page": 50 }
+    table_pagination = {"per_page": 10}
     export_formats = ['xlsx', 'csv']
+    export_name = 'Plant Production'
 
     def get_queryset(self):
-        qs = self.model.objects.all().annotate(production =(F('end_reading') - F('start_reading')))
+        qs = self.model.objects.all().annotate(production=(F('end_reading') - F('start_reading')))
         filtered_list = PlantProductionFilter(self.request.GET, queryset=qs)
         return filtered_list.qs
-# class PlantProductionListView(ListView):
-#     model = PlantProduction
-#     template_name = 'toris/index.html'
-#     context_object_name = 'productionall'
-#     paginate_by = 20
-    # success_url = reverse_lazy('toris:production_list')
-
-    # def get_queryset(self):
-    #     production_list = PlantProduction.plant_production.all()
-    #     print(production_list.query)
-    #     return production_list
-    # def get_queryset(self,*args,**kwargs):
-    #     production_list = PlantProduction.objects.order_by(self.kwargs.get('date'))
-    #     return production_list
-
-
-class PlantProductionSortView(ListView):
-    model = PlantProduction
-    template_name = 'toris/index.html'
-    context_object_name = 'productionall'
-    paginate_by = 20
-    success_url = reverse_lazy('toris:production_list')
-
-    def get_queryset(self, *args, **kwargs):
-        production_list = PlantProduction.objects.order_by(self.kwargs.get('data'))
-        return production_list
 
 
 class PlantProductionCreateView(CreateView):
@@ -72,11 +50,6 @@ class PlantProductionCreateView(CreateView):
 
 def load_start_reading(request):
     plant_id = request.GET.get('plant')
-    # print(plant_id)
-    # if plant_id == 'TPF':
-    #     plant_id = 'TPF'
-    # elif plant_id == 'TPP':
-    #     plant_id = 'TPP'
     query = PlantProduction.objects.filter(plant=plant_id).order_by('end_reading')
     end_reading = query[len(query) - 1].end_reading
     print(end_reading)
@@ -103,28 +76,19 @@ class ProductionDeleteView(DeleteView):
     success_url = reverse_lazy('toris:production_list')
 
 
-class ProductListView(ListView):
+class ProductListView(ExportMixin, SingleTableMixin, FilterView):
     model = Product
+    table_class = ProductTable
     template_name = 'toris/product_list.html'
-    context_object_name = 'productall'
-    paginate_by = 20
+    filterset_class = ProductFilter
+    table_pagination = {"per_page": 10}
+    export_formats = ['xlsx', 'csv']
+    export_name = 'Product'
 
     def get_queryset(self):
-        product_list = Product.objects.all().order_by('product_code')
-        return product_list
-
-
-class ProductSortView(ListView):
-    model = Product
-    template_name = 'toris/product_list.html'
-    context_object_name = 'productall'
-    paginate_by = 20
-    success_url = reverse_lazy('toris:product_list')
-
-    def get_queryset(self, *args, **kwargs):
-        product_list = Product.objects.order_by(self.kwargs.get('data'))
-        return product_list
-
+        qs = self.model.objects.all()
+        filtered_list = ProductFilter(self.request.GET, queryset=qs)
+        return filtered_list.qs
 
 class ProductDetailView(DetailView):
     model = Product
@@ -153,27 +117,22 @@ class ProductDeleteView(DeleteView):
     success_url = reverse_lazy('toris:product_list')
 
 
-class OrderListView(ListView):
+class OrderListView(ExportMixin, SingleTableMixin, FilterView):
     model = Order
+    table_class = OrderTable
     template_name = 'toris/order_list.html'
-    context_object_name = 'orderall'
-    paginate_by = 20
+    filterset_class = OrderFilter
+    table_pagination = {"per_page": 10}
+    export_formats = ['xlsx', 'csv']
+    export_name = 'Order'
 
     def get_queryset(self):
-        order_list = Order.objects.all().order_by('order_date')
-        return order_list
+        qs = self.model.objects.all()
+        filtered_list = ProductFilter(self.request.GET, queryset=qs)
+        return filtered_list.qs
 
 
-class OrderSortView(ListView):
-    model = Order
-    template_name = 'toris/order_list.html'
-    context_object_name = 'orderall'
-    paginate_by = 9
-    success_url = reverse_lazy('toris:order_list')
 
-    def get_queryset(self, *args, **kwargs):
-        order_list = Order.objects.order_by(self.kwargs.get('data'))
-        return order_list
 
 
 class OrderDetailView(DetailView):
@@ -202,51 +161,118 @@ class OrderDeleteView(DeleteView):
     template_name = 'toris/order_delete.html'
     success_url = reverse_lazy('toris:order_list')
 
+class OperatorListView(ExportMixin, SingleTableMixin, FilterView):
+    model = Operator
+    table_class = OperatorTable
+    template_name = 'toris/operator_list.html'
+    filterset_class = OperatorFilter
+    table_pagination = {"per_page": 10}
+    export_formats = ['xlsx', 'csv']
+    export_name = 'Operator'
+
+    def get_queryset(self):
+        qs = self.model.objects.all()
+        filtered_list = OperatorFilter(self.request.GET, queryset=qs)
+        return filtered_list.qs
+
+class OperatorCreateView(CreateView):
+    model = Operator
+    form_class = OperatorForm
+    template_name = 'toris/operator_add.html'
+    success_url = reverse_lazy('toris:operator_list')
+
+
+class OperatorUpdateView(UpdateView):
+    model = Operator
+    template_name = 'toris/operator_update.html'
+    context_object_name = 'operator'
+    form_class = OperatorForm
+    success_url = reverse_lazy('toris:operator_list')
+
+
+class OperatorDeleteView(DeleteView):
+    model = Operator
+    template_name = 'toris/operator_delete.html'
+    success_url = reverse_lazy('toris:operator_list')
+
+class OperatorDetailView(DetailView):
+    model = Operator
+    template_name = 'toris/operator_detail.html'
+    context_object_name = 'operatordetail'
+# class ProductionOrderListView(ExportMixin, SingleTableMixin, FilterView):
+#     model = Order
+#     # table_class = ProductionOrderTable
+#     # template_name = 'toris/order_list.html'
+#     template_name = 'toris/production_order.html'
+#     context_object_name = 'production_orders'
+#     # filterset_class = OrderFilter
+#     # table_pagination = {"per_page": 10}
+#     export_formats = ['xlsx', 'csv']
+#     export_name = 'Order'
+#
+#     def get_queryset(self):
+#         product = Product.objects.all()
+#         order_groupby = Order.objects.values('product_code').annotate(sum_o=Sum('order_qty'))
+#         production_groupby = PlantProduction.objects.values('product_code').annotate(
+#             sum_p=Sum(F('end_reading') - F('start_reading')))
+#         product = product.values()
+#         product_df = pd.DataFrame.from_records(product)
+#         order_df = pd.DataFrame(order_groupby)
+#         production_df = pd.DataFrame(production_groupby)
+#         production_order = production_df.merge(order_df, left_on='product_code', right_on='product_code',
+#                                                how='right')
+#         production_order = production_order.replace([np.nan], 0)
+#         production_order['net_p'] = production_order['sum_o'] - production_order['sum_p']
+#         production_order = production_order[['product_code', 'net_p']]
+#         production_order = production_order.merge(product_df, left_on='product_code', right_on='product_code',
+#                                                   how='left')
+#         production_order = production_order.sort_values(['net_p'])
+#         production_order = production_order.to_dict('records')
+#         return production_order
+
 
 class ProductionOrderListView(ListView):
     model = Order
     template_name = 'toris/production_order.html'
-    context_object_name = 'orders'
+    context_object_name = 'production_orders'
 
     def get_queryset(self):
-        # que = Order.objects.all().select_related('product_code')
         product = Product.objects.all()
         order_groupby = Order.objects.values('product_code').annotate(sum_o=Sum('order_qty'))
+        # print(product)
+        print(order_groupby)
         production_groupby = PlantProduction.objects.values('product_code').annotate(
             sum_p=Sum(F('end_reading') - F('start_reading')))
-        # print(production_groupby.query)
         product = product.values()
         product_df = pd.DataFrame.from_records(product)
-        # print(production_groupby)
-        # print(order_groupby)
-        # print(q)
+        print(product_df)
         order_df = pd.DataFrame(order_groupby)
         production_df = pd.DataFrame(production_groupby)
+        print(order_df)
+        print(production_df)
         production_order = production_df.merge(order_df, left_on='product_code', right_on='product_code',
-                                            how='right')
-
-        # production_order = production_order.replace([np.nan], 0)
-        production_order['net_p'] = production_order['sum_o']-production_order['sum_p']
-        production_order = production_order[['product_code','net_p']]
-        # production_order = production_order.astype({'product_code': 'int', 'sum_p': 'float',
-        #      'sum_o': 'float', 'net_p': 'float'})
-        production_order.reset_index(drop=True)
-        production_order =production_order.dropna()
-        print(production_order)
+                                               how='outer')
+        production_order = production_order.replace([np.nan], 0)
+        production_order['net_p'] = production_order['sum_o'] - production_order['sum_p']
+        production_order = production_order[['product_code', 'net_p']]
         production_order = production_order.merge(product_df, left_on='product_code', right_on='product_code',
-                                            how='left')
-
+                                                  how='left')
         production_order = production_order.sort_values(['net_p'])
-        production_order=production_order.to_dict('records')
+        production_order = production_order[production_order['net_p'] != 0]
+        production_order = production_order.to_dict('records')
         return production_order
+
+
 def export_production_order_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="production_order_csv.csv"'
     writer = csv.writer(response)
-    writer.writerow(['product_code','required_production', 'tape_color', 'color_marking_on_bobin', 'req_denier', 'req_gramage',
-                     'req_tape_width', 'stock_of_bobin','cutter_spacing', 'req_streanth_per_tape_in_kg', 'req_elongation_percent','streanth',
-                     'tanacity','pp_percent','filler_percent','shiner_percent','color_percent','tpt_percent',
-                     'uv_percent','color_name'])
+    writer.writerow(
+        ['product_code', 'required_production', 'tape_color', 'color_marking_on_bobin', 'req_denier', 'req_gramage',
+         'req_tape_width', 'stock_of_bobin', 'cutter_spacing', 'req_streanth_per_tape_in_kg', 'req_elongation_percent',
+         'streanth',
+         'tanacity', 'pp_percent', 'filler_percent', 'shiner_percent', 'color_percent', 'tpt_percent',
+         'uv_percent', 'color_name'])
     product = Product.objects.all()
     order_groupby = Order.objects.values('product_code').annotate(sum_o=Sum('order_qty'))
     production_groupby = PlantProduction.objects.values('product_code').annotate(
@@ -267,10 +293,6 @@ def export_production_order_csv(request):
     for item in production_order:
         writer.writerow(item)
     return response
-
-
-
-
 
 # import pandas as pd
 # today = datetime.today().strftime('%Y-%m-%d')
@@ -332,3 +354,75 @@ def export_production_order_csv(request):
 #         return data
 #
 #
+
+
+# class PlantProductionListView(ListView):
+#     model = PlantProduction
+#     template_name = 'toris/index.html'
+#     context_object_name = 'productionall'
+#     paginate_by = 20
+# success_url = reverse_lazy('toris:production_list')
+
+# def get_queryset(self):
+#     production_list = PlantProduction.plant_production.all()
+#     print(production_list.query)
+#     return production_list
+# def get_queryset(self,*args,**kwargs):
+#     production_list = PlantProduction.objects.order_by(self.kwargs.get('date'))
+#     return production_list
+
+
+# class PlantProductionSortView(ListView):
+#     model = PlantProduction
+#     template_name = 'toris/index.html'
+#     context_object_name = 'productionall'
+#     paginate_by = 20
+#     success_url = reverse_lazy('toris:production_list')
+#
+#     def get_queryset(self, *args, **kwargs):
+#         production_list = PlantProduction.objects.order_by(self.kwargs.get('data'))
+#         return production_list
+
+# class ProductListView(ListView):
+#     model = Product
+#     template_name = 'toris/product_list.html'
+#     context_object_name = 'productall'
+#     paginate_by = 20
+#
+#     def get_queryset(self):
+#         product_list = Product.objects.all().order_by('product_code')
+#         return product_list
+
+
+# class OrderListView(ListView):
+#     model = Order
+#     template_name = 'toris/order_list.html'
+#     context_object_name = 'orderall'
+#     paginate_by = 20
+#
+#     def get_queryset(self):
+#         order_list = Order.objects.all().order_by('order_date')
+#         return order_list
+
+
+# class OrderSortView(ListView):
+#     model = Order
+#     template_name = 'toris/order_list.html'
+#     context_object_name = 'orderall'
+#     paginate_by = 9
+#     success_url = reverse_lazy('toris:order_list')
+#
+#     def get_queryset(self, *args, **kwargs):
+#         order_list = Order.objects.order_by(self.kwargs.get('data'))
+#         return order_list
+
+# class ProductSortView(ListView):
+#     model = Product
+#     template_name = 'toris/product_list.html'
+#     context_object_name = 'productall'
+#     paginate_by = 20
+#     success_url = reverse_lazy('toris:product_list')
+#
+#     def get_queryset(self, *args, **kwargs):
+#         product_list = Product.objects.order_by(self.kwargs.get('data'))
+#         return product_list

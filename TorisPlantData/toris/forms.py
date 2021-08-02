@@ -1,4 +1,4 @@
-from .models import PlantProduction, Product, Order, Operator,Plant
+from .models import PlantProduction, Product, Order, Operator, Plant
 from django.forms import ModelForm
 from bootstrap_datepicker_plus import DatePickerInput
 from django import forms
@@ -28,6 +28,10 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = '__all__'
 
+class OperatorForm(forms.ModelForm):
+    class Meta:
+        model = Operator
+        fields = '__all__'
 
 class OrderForm(ModelForm):
     class Meta:

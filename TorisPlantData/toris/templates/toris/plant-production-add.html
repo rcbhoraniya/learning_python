@@ -3,8 +3,8 @@
 {{ form.media }}
 {% load crispy_forms_tags %}
 <div class="container mt-3">
-    <div class="card text-center border-dark mb-3">
-        <h4 class="card-header">Plant Production Add Form</h4>
+    <div class="card  border-dark mb-3">
+        <h4 class="card-header text-center">Plant Production Add Form</h4>
         <div class="card-body">
             <form method="post" id="plantproductionForm" data-start-reading-url="{% url 'toris:ajax_load_plant' %}"
                   novalidate>
