@@ -1,82 +1,88 @@
-from django.urls import reverse_lazy
-import json
-from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView
-from .models import Product, PlantProduction, Order,Operator
-from django.http import HttpResponseRedirect, HttpResponse
-from .forms import PlantProductionForm, ProductForm, OrderForm,OperatorForm
+import json, csv
+from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView, RedirectView
+from .models import Product, PlantProduction, Order, Operator
+from django.http import HttpResponse
+from .forms import PlantProductionForm, ProductForm, OrderForm, OperatorForm
 from django.db.models import Avg, Max, Min, Sum, Count, F
 import pandas as pd
 import numpy as np
-import csv
-from django.db.models import Q
-from django.shortcuts import get_object_or_404, render
-from django.shortcuts import render
-from django.views import View
-from datetime import date, datetime, timedelta
-from django.db.models import OuterRef, Subquery
-from django.db.models.functions import Lower
-from django.db import connection
-from django_tables2 import SingleTableView
-from django_tables2 import SingleTableView
-from .tables import PlantProductionTable, ProductTable, OrderTable,ProductionOrderTable,OperatorTable
-from .filters import PlantProductionFilter, ProductFilter, OrderFilter,OperatorFilter
+from django.shortcuts import redirect
+from .tables import PlantProductionTable, ProductTable, OrderTable, OperatorTable
+from .filters import PlantProductionFilter, ProductFilter, OrderFilter, OperatorFilter
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 from django_tables2.export.views import ExportMixin
-from django_tables2.export.export import TableExport
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.models import User
+from django.contrib.auth.views import *
+from django.contrib.auth.forms import *
+from django.core.exceptions import PermissionDenied
+from django.utils.decorators import method_decorator
+pd.set_option('display.width', 1500)
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_columns', 50)
 
 
-class PlantProductionListView(ExportMixin, SingleTableMixin, FilterView):
+
+class HomeView(TemplateView):
+    template_name = 'toris/home.html'
+
+
+class PermissionDeniedView(TemplateView):
+    template_name = 'toris/permission_denied.html'
+
+
+class UserAccessMixin(PermissionRequiredMixin, PermissionDenied):
+
+    def dispatch(self, request, *args, **kwargs):
+        if (not self.request.user.is_authenticated):
+            return redirect_to_login(self.request.get_full_path(), self.get_login_url(), self.get_redirect_field_name())
+        if not self.has_permission():
+            # raise PermissionDenied()
+            return redirect('toris:permissiondenied')
+        return super(UserAccessMixin, self).dispatch(request, *args, **kwargs)
+
+
+class UserRegistrationView(CreateView):
+    model = User
+    form_class = UserCreationForm
+    template_name = 'toris/registration.html'
+    success_url = reverse_lazy('toris:login')
+
+
+@method_decorator(login_required(login_url='toris:login', redirect_field_name='next'), name='dispatch')
+class PlantProductionListView(ExportMixin, SingleTableMixin, FilterView, ):
     model = PlantProduction
     table_class = PlantProductionTable
-    template_name = 'toris/index.html'
+    template_name = 'toris/plant-production-list.html'
     filterset_class = PlantProductionFilter
-    table_pagination = {"per_page": 10}
+    table_pagination = {"per_page": 100}
     export_formats = ['xlsx', 'csv']
     export_name = 'Plant Production'
 
     def get_queryset(self):
-        qs = self.model.objects.all().annotate(production=(F('end_reading') - F('start_reading')))
+        # shift_uniq = self.model.objects.order_by('shift').values_list('shift', flat=True).distinct()
+        # plant_uniq = self.model.objects.order_by('plant__name').values_list('plant__name', flat=True).distinct()
+        # for plant in plant_uniq:
+        #
+        #     date_uniq = self.model.objects.filter(plant__name = plant).order_by('date').values_list('date', flat=True).distinct()
+        #     for dates in date_uniq:
+        #         for shifts in shift_uniq:
+        #
+        #             print(plant)
+        #             print(dates)
+        #             print(shifts)
+        #             qs1 = self.model.objects.filter(date = dates).filter(shift = shifts).filter(plant__name = plant)
+        #             print(qs1)
+
+        qs = self.model.objects.all().annotate(production_in_kg=(F('end_reading') - F('start_reading'))).order_by(
+            'date', 'end_reading')
         filtered_list = PlantProductionFilter(self.request.GET, queryset=qs)
         return filtered_list.qs
 
 
-class PlantProductionCreateView(CreateView):
-    model = PlantProduction
-    form_class = PlantProductionForm
-    template_name = 'toris/plant-production-add.html'
-    success_url = reverse_lazy('toris:production_list')
-
-
-def load_start_reading(request):
-    plant_id = request.GET.get('plant')
-    query = PlantProduction.objects.filter(plant=plant_id).order_by('end_reading')
-    end_reading = query[len(query) - 1].end_reading
-    print(end_reading)
-    return HttpResponse(json.dumps(end_reading), content_type='application/json')
-
-
-class PlantProductionDetailView(DetailView):
-    model = PlantProduction
-    template_name = 'toris/plant-production-detail.html'
-    context_object_name = 'plantdetailall'
-
-
-class ProductionUpdateView(UpdateView):
-    model = PlantProduction
-    template_name = 'toris/plant-production-update.html'
-    context_object_name = 'production'
-    form_class = PlantProductionForm
-    success_url = reverse_lazy('toris:production_list')
-
-
-class ProductionDeleteView(DeleteView):
-    model = PlantProduction
-    template_name = 'toris/plant-production-delete.html'
-    success_url = reverse_lazy('toris:production_list')
-
-
-class ProductListView(ExportMixin, SingleTableMixin, FilterView):
+@method_decorator(login_required(login_url='toris:login', redirect_field_name='next'), name='dispatch')
+class ProductListView(ExportMixin, SingleTableMixin, FilterView, ):
     model = Product
     table_class = ProductTable
     template_name = 'toris/product_list.html'
@@ -90,34 +96,9 @@ class ProductListView(ExportMixin, SingleTableMixin, FilterView):
         filtered_list = ProductFilter(self.request.GET, queryset=qs)
         return filtered_list.qs
 
-class ProductDetailView(DetailView):
-    model = Product
-    template_name = 'toris/product_detail.html'
-    context_object_name = 'productdetail'
 
-
-class ProductCreateView(CreateView):
-    model = Product
-    form_class = ProductForm
-    template_name = 'toris/product_add.html'
-    success_url = reverse_lazy('toris:product_list')
-
-
-class ProductUpdateView(UpdateView):
-    model = Product
-    template_name = 'toris/product_update.html'
-    context_object_name = 'product'
-    form_class = ProductForm
-    success_url = reverse_lazy('toris:product_list')
-
-
-class ProductDeleteView(DeleteView):
-    model = Product
-    template_name = 'toris/product_delete.html'
-    success_url = reverse_lazy('toris:product_list')
-
-
-class OrderListView(ExportMixin, SingleTableMixin, FilterView):
+@method_decorator(login_required(login_url='toris:login', redirect_field_name='next'), name='dispatch')
+class OrderListView(ExportMixin, SingleTableMixin, FilterView, ):
     model = Order
     table_class = OrderTable
     template_name = 'toris/order_list.html'
@@ -132,36 +113,8 @@ class OrderListView(ExportMixin, SingleTableMixin, FilterView):
         return filtered_list.qs
 
 
-
-
-
-class OrderDetailView(DetailView):
-    model = Order
-    template_name = 'toris/order_detail.html'
-    context_object_name = 'orderdetail'
-
-
-class OrderCreateView(CreateView):
-    model = Order
-    form_class = OrderForm
-    template_name = 'toris/order_add.html'
-    success_url = reverse_lazy('toris:order_list')
-
-
-class OrderUpdateView(UpdateView):
-    model = Order
-    template_name = 'toris/order_update.html'
-    context_object_name = 'order'
-    form_class = OrderForm
-    success_url = reverse_lazy('toris:order_list')
-
-
-class OrderDeleteView(DeleteView):
-    model = Order
-    template_name = 'toris/order_delete.html'
-    success_url = reverse_lazy('toris:order_list')
-
-class OperatorListView(ExportMixin, SingleTableMixin, FilterView):
+@method_decorator(login_required(login_url='toris:login', redirect_field_name='next'), name='dispatch')
+class OperatorListView(ExportMixin, SingleTableMixin, FilterView, ):
     model = Operator
     table_class = OperatorTable
     template_name = 'toris/operator_list.html'
@@ -175,14 +128,159 @@ class OperatorListView(ExportMixin, SingleTableMixin, FilterView):
         filtered_list = OperatorFilter(self.request.GET, queryset=qs)
         return filtered_list.qs
 
-class OperatorCreateView(CreateView):
+
+class PlantProductionCreateView(UserAccessMixin, CreateView):
+    raise_exception = False
+    permission_required = 'toris.add_plantproduction'
+    permission_denied_message = ''
+    login_url = 'toris:login'
+    redirect_field_name = 'next'
+
+    model = PlantProduction
+    form_class = PlantProductionForm
+    template_name = 'toris/plant-production-add.html'
+    success_url = reverse_lazy('toris:production_list')
+
+
+class ProductCreateView(UserAccessMixin, CreateView):
+    raise_exception = False
+    permission_required = ('toris.add_production',)
+    permission_denied_message = 'Not Authorise'
+    login_url = 'toris:login'
+    redirect_field_name = 'next'
+
+    model = Product
+    form_class = ProductForm
+    template_name = 'toris/product_add.html'
+    success_url = reverse_lazy('toris:product_list')
+
+
+class OrderCreateView(UserAccessMixin, CreateView):
+    raise_exception = False
+    permission_required = ('toris.add_order',)
+    permission_denied_message = 'Not Authorise'
+    login_url = 'toris:login'
+    redirect_field_name = 'next'
+
+    model = Order
+    form_class = OrderForm
+    template_name = 'toris/order_add.html'
+    success_url = reverse_lazy('toris:order_list')
+
+
+class OperatorCreateView(UserAccessMixin, CreateView):
+    raise_exception = False
+    permission_required = ('toris.add_operator',)
+    permission_denied_message = 'Not Authorise'
+    login_url = 'toris:login'
+    redirect_field_name = 'next'
+
     model = Operator
     form_class = OperatorForm
     template_name = 'toris/operator_add.html'
     success_url = reverse_lazy('toris:operator_list')
 
 
-class OperatorUpdateView(UpdateView):
+class PlantProductionDetailView(UserAccessMixin, DetailView):
+    raise_exception = False
+    permission_required = ('toris.view_plantproduction',)
+    permission_denied_message = 'Not Authorise'
+    login_url = 'toris:login'
+    redirect_field_name = 'next'
+
+    model = PlantProduction
+    template_name = 'toris/plant-production-detail.html'
+    context_object_name = 'plantdetailall'
+
+    def get_queryset(self):
+        return PlantProduction.objects.all().select_related("product_code")
+
+
+class ProductDetailView(UserAccessMixin, DetailView):
+    raise_exception = False
+    permission_required = ('toris.view_product',)
+    permission_denied_message = 'Not Authorise'
+    login_url = 'toris:login'
+    redirect_field_name = 'next'
+
+    model = Product
+    template_name = 'toris/product_detail.html'
+    context_object_name = 'productdetail'
+
+
+class OrderDetailView(UserAccessMixin, DetailView):
+    raise_exception = False
+    permission_required = ('toris.view_order',)
+    permission_denied_message = 'Not Authorise'
+    login_url = 'toris:login'
+    redirect_field_name = 'next'
+
+    model = Order
+    template_name = 'toris/order_detail.html'
+    context_object_name = 'orderdetail'
+
+
+class OperatorDetailView(UserAccessMixin, DetailView):
+    raise_exception = False
+    permission_required = ('toris.view_operator',)
+    permission_denied_message = 'Not Authorise'
+    login_url = 'toris:login'
+    redirect_field_name = 'next'
+
+    model = Operator
+    template_name = 'toris/operator_detail.html'
+    context_object_name = 'operatordetail'
+
+
+class ProductionUpdateView(UserAccessMixin, UpdateView):
+    raise_exception = False
+    permission_required = ('toris.change_plantproduction',)
+    permission_denied_message = 'Not Authorise'
+    login_url = 'toris:login'
+    redirect_field_name = 'next'
+
+    model = PlantProduction
+    template_name = 'toris/plant-production-update.html'
+    context_object_name = 'production'
+    form_class = PlantProductionForm
+    success_url = reverse_lazy('toris:production_list')
+
+
+class ProductUpdateView(UserAccessMixin, UpdateView):
+    raise_exception = False
+    permission_required = ('toris.change_product',)
+    permission_denied_message = 'Not Authorise'
+    login_url = 'toris:login'
+    redirect_field_name = 'next'
+
+    model = Product
+    template_name = 'toris/product_update.html'
+    context_object_name = 'product'
+    form_class = ProductForm
+    success_url = reverse_lazy('toris:product_list')
+
+
+class OrderUpdateView(UserAccessMixin, UpdateView):
+    raise_exception = False
+    permission_required = ('toris.change_order',)
+    permission_denied_message = 'Not Authorise'
+    login_url = 'toris:login'
+    redirect_field_name = 'next'
+
+    model = Order
+    template_name = 'toris/order_update.html'
+    context_object_name = 'order'
+    form_class = OrderForm
+    success_url = reverse_lazy('toris:order_list')
+
+
+class OperatorUpdateView(UserAccessMixin, UpdateView):
+    raise_exception = False
+    permission_required = ('toris.change_operator',)
+    permission_denied_message = 'Not Authorise'
+    login_url = 'toris:login'
+    redirect_field_name = 'next'
+
     model = Operator
     template_name = 'toris/operator_update.html'
     context_object_name = 'operator'
@@ -190,66 +288,88 @@ class OperatorUpdateView(UpdateView):
     success_url = reverse_lazy('toris:operator_list')
 
 
-class OperatorDeleteView(DeleteView):
+class ProductionDeleteView(UserAccessMixin, DeleteView):
+    raise_exception = False
+    permission_required = ('toris.delete_plantproduction',)
+    permission_denied_message = 'Not Authorise'
+    login_url = 'toris:login'
+    redirect_field_name = 'next'
+
+    model = PlantProduction
+    template_name = 'toris/plant-production-delete.html'
+    success_url = reverse_lazy('toris:production_list')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.soft_delete()
+        return HttpResponseRedirect(self.get_success_url())
+
+
+class ProductDeleteView(UserAccessMixin, DeleteView):
+    raise_exception = False
+    permission_required = ('toris.delete_product',)
+    permission_denied_message = 'Not Authorise'
+    login_url = 'toris:login'
+    redirect_field_name = 'next'
+
+    model = Product
+    template_name = 'toris/product_delete.html'
+    success_url = reverse_lazy('toris:product_list')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.soft_delete()
+        return HttpResponseRedirect(self.get_success_url())
+
+
+class OrderDeleteView(UserAccessMixin, DeleteView):
+    raise_exception = False
+    permission_required = ('toris.delete_order',)
+    permission_denied_message = 'Not Authorise'
+    login_url = 'toris:login'
+    redirect_field_name = 'next'
+
+    model = Order
+    template_name = 'toris/order_delete.html'
+    success_url = reverse_lazy('toris:order_list')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.soft_delete()
+        return HttpResponseRedirect(self.get_success_url())
+
+
+class OperatorDeleteView(UserAccessMixin, DeleteView):
+    raise_exception = False
+    permission_required = ('toris.delete_operator',)
+    permission_denied_message = 'Not Authorise'
+    login_url = 'toris:login'
+    redirect_field_name = 'next'
+
     model = Operator
     template_name = 'toris/operator_delete.html'
     success_url = reverse_lazy('toris:operator_list')
 
-class OperatorDetailView(DetailView):
-    model = Operator
-    template_name = 'toris/operator_detail.html'
-    context_object_name = 'operatordetail'
-# class ProductionOrderListView(ExportMixin, SingleTableMixin, FilterView):
-#     model = Order
-#     # table_class = ProductionOrderTable
-#     # template_name = 'toris/order_list.html'
-#     template_name = 'toris/production_order.html'
-#     context_object_name = 'production_orders'
-#     # filterset_class = OrderFilter
-#     # table_pagination = {"per_page": 10}
-#     export_formats = ['xlsx', 'csv']
-#     export_name = 'Order'
-#
-#     def get_queryset(self):
-#         product = Product.objects.all()
-#         order_groupby = Order.objects.values('product_code').annotate(sum_o=Sum('order_qty'))
-#         production_groupby = PlantProduction.objects.values('product_code').annotate(
-#             sum_p=Sum(F('end_reading') - F('start_reading')))
-#         product = product.values()
-#         product_df = pd.DataFrame.from_records(product)
-#         order_df = pd.DataFrame(order_groupby)
-#         production_df = pd.DataFrame(production_groupby)
-#         production_order = production_df.merge(order_df, left_on='product_code', right_on='product_code',
-#                                                how='right')
-#         production_order = production_order.replace([np.nan], 0)
-#         production_order['net_p'] = production_order['sum_o'] - production_order['sum_p']
-#         production_order = production_order[['product_code', 'net_p']]
-#         production_order = production_order.merge(product_df, left_on='product_code', right_on='product_code',
-#                                                   how='left')
-#         production_order = production_order.sort_values(['net_p'])
-#         production_order = production_order.to_dict('records')
-#         return production_order
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.soft_delete()
+        return HttpResponseRedirect(self.get_success_url())
 
 
+@method_decorator(login_required(login_url='toris:login', redirect_field_name='next'), name='dispatch')
 class ProductionOrderListView(ListView):
-    model = Order
     template_name = 'toris/production_order.html'
     context_object_name = 'production_orders'
 
     def get_queryset(self):
         product = Product.objects.all()
         order_groupby = Order.objects.values('product_code').annotate(sum_o=Sum('order_qty'))
-        # print(product)
-        print(order_groupby)
         production_groupby = PlantProduction.objects.values('product_code').annotate(
             sum_p=Sum(F('end_reading') - F('start_reading')))
         product = product.values()
         product_df = pd.DataFrame.from_records(product)
-        print(product_df)
         order_df = pd.DataFrame(order_groupby)
         production_df = pd.DataFrame(production_groupby)
-        print(order_df)
-        print(production_df)
         production_order = production_df.merge(order_df, left_on='product_code', right_on='product_code',
                                                how='outer')
         production_order = production_order.replace([np.nan], 0)
@@ -259,6 +379,7 @@ class ProductionOrderListView(ListView):
                                                   how='left')
         production_order = production_order.sort_values(['net_p'])
         production_order = production_order[production_order['net_p'] != 0]
+        production_order = production_order.drop(columns=['id', 'is_deleted', 'deleted_at'])
         production_order = production_order.to_dict('records')
         return production_order
 
@@ -268,9 +389,8 @@ def export_production_order_csv(request):
     response['Content-Disposition'] = 'attachment; filename="production_order_csv.csv"'
     writer = csv.writer(response)
     writer.writerow(
-        ['product_code', 'required_production', 'tape_color', 'color_marking_on_bobin', 'req_denier', 'req_gramage',
-         'req_tape_width', 'stock_of_bobin', 'cutter_spacing', 'req_streanth_per_tape_in_kg', 'req_elongation_percent',
-         'streanth',
+        ['product_code', 'required_production', 'tape_color', 'color_marking_on_bobin', 'denier', 'gramage',
+         'tape_width', 'stock_of_bobin', 'cutter_spacing', 'streanth_per_tape_in_kg', 'elongation_percent',
          'tanacity', 'pp_percent', 'filler_percent', 'shiner_percent', 'color_percent', 'tpt_percent',
          'uv_percent', 'color_name'])
     product = Product.objects.all()
@@ -282,147 +402,25 @@ def export_production_order_csv(request):
     order_df = pd.DataFrame(order_groupby)
     production_df = pd.DataFrame(production_groupby)
     production_order = production_df.merge(order_df, left_on='product_code', right_on='product_code',
-                                           how='right')
+                                           how='outer')
     production_order = production_order.replace([np.nan], 0)
     production_order['net_p'] = production_order['sum_o'] - production_order['sum_p']
     production_order = production_order[['product_code', 'net_p']]
     production_order = production_order.merge(product_df, left_on='product_code', right_on='product_code',
                                               how='left')
     production_order = production_order.sort_values(['net_p'])
+    production_order = production_order[production_order['net_p'] != 0]
+    production_order = production_order.drop(columns=['id', 'is_deleted', 'deleted_at'])
+    print(production_order)
     production_order = production_order.values.tolist()
     for item in production_order:
         writer.writerow(item)
     return response
 
-# import pandas as pd
-# today = datetime.today().strftime('%Y-%m-%d')
-# date1 = pd.to_datetime(today)
-# class SearchView(ListView):
-#     template_name = 'stockapp/search.html'
-#     context_object_name = 'all_search_results'
-#     # paginate_by = 9
-#
-#     def get_queryset(self):
-#
-#         query = self.request.GET.get('search')
-#         if query == 'new_closing_high':
-#             postresult= Stock_price.objects.filter(stock_id_id =OuterRef("pk")).filter(date__gte=datetime.today()-timedelta(days=365)).values('stock_id_id').annotate(max_close=Max('close')).order_by('-max_close')
-#             postresult1 = Stock.objects.all().annotate( max_close=Subquery(postresult.values('max_close')[:1] ),date =Subquery(postresult.values('date')[:1] ) ).order_by('nse_symbol')
-#             postresult2 = postresult1.filter(date = date1.date() )
-#             print(postresult2)
-#             print(date1.date())
-#             result = postresult1
-#         else:
-#
-#            result = Stock.objects.order_by('name')
-#         return result
-#
-#
-#
 
-# class ProductListView(ListView):
-#     template_name = 'toris/product_list.html'
-#     context_object_name = 'productall'
-#     # paginate_by = 9
-#
-#     def get_queryset(self):  # new
-#         return Product.objects.order_by('product_code')
-
-# class OrderListView(ListView):
-#     template_name = 'toris/order_list.html'
-#     context_object_name = 'orderall'
-#     # paginate_by = 9
-#
-#     def get_queryset(self):  # new
-#         return Order.objects.order_by('order_date')
-
-# class StockDetailListView(ListView):
-#     template_name = 'stockapp/detail.html'
-#     context_object_name = 'stocksdetail'
-#     paginate_by = 50
-#     def get_queryset(self):
-#         self.id = get_object_or_404(Stock, id=self.kwargs['id'])
-#         stock_obj = Stock_price.objects.order_by('date').filter(stock_id_id=self.id)
-#             # .filter(date__year = '2021')
-#         return stock_obj
-#
-#     def get_context_data(self, **kwargs):
-#         name = get_object_or_404(Stock, id=self.kwargs['id'])
-#         data = super().get_context_data(**kwargs)
-#         data['stockname'] = name
-#         data['exchange'] = 'NSE'
-#         return data
-#
-#
-
-
-# class PlantProductionListView(ListView):
-#     model = PlantProduction
-#     template_name = 'toris/index.html'
-#     context_object_name = 'productionall'
-#     paginate_by = 20
-# success_url = reverse_lazy('toris:production_list')
-
-# def get_queryset(self):
-#     production_list = PlantProduction.plant_production.all()
-#     print(production_list.query)
-#     return production_list
-# def get_queryset(self,*args,**kwargs):
-#     production_list = PlantProduction.objects.order_by(self.kwargs.get('date'))
-#     return production_list
-
-
-# class PlantProductionSortView(ListView):
-#     model = PlantProduction
-#     template_name = 'toris/index.html'
-#     context_object_name = 'productionall'
-#     paginate_by = 20
-#     success_url = reverse_lazy('toris:production_list')
-#
-#     def get_queryset(self, *args, **kwargs):
-#         production_list = PlantProduction.objects.order_by(self.kwargs.get('data'))
-#         return production_list
-
-# class ProductListView(ListView):
-#     model = Product
-#     template_name = 'toris/product_list.html'
-#     context_object_name = 'productall'
-#     paginate_by = 20
-#
-#     def get_queryset(self):
-#         product_list = Product.objects.all().order_by('product_code')
-#         return product_list
-
-
-# class OrderListView(ListView):
-#     model = Order
-#     template_name = 'toris/order_list.html'
-#     context_object_name = 'orderall'
-#     paginate_by = 20
-#
-#     def get_queryset(self):
-#         order_list = Order.objects.all().order_by('order_date')
-#         return order_list
-
-
-# class OrderSortView(ListView):
-#     model = Order
-#     template_name = 'toris/order_list.html'
-#     context_object_name = 'orderall'
-#     paginate_by = 9
-#     success_url = reverse_lazy('toris:order_list')
-#
-#     def get_queryset(self, *args, **kwargs):
-#         order_list = Order.objects.order_by(self.kwargs.get('data'))
-#         return order_list
-
-# class ProductSortView(ListView):
-#     model = Product
-#     template_name = 'toris/product_list.html'
-#     context_object_name = 'productall'
-#     paginate_by = 20
-#     success_url = reverse_lazy('toris:product_list')
-#
-#     def get_queryset(self, *args, **kwargs):
-#         product_list = Product.objects.order_by(self.kwargs.get('data'))
-#         return product_list
+def load_start_reading(request):
+    plant_id = request.GET.get('plant')
+    query = PlantProduction.objects.filter(plant=plant_id).order_by('date', 'end_reading')
+    end_reading = query[len(query) - 1].end_reading
+    print(end_reading)
+    return HttpResponse(json.dumps(end_reading), content_type='application/json')

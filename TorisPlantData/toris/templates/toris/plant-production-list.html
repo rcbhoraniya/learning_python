@@ -1,32 +1,23 @@
+
 {% extends "base.html" %}
 {% block title %}Plant Production List{% endblock %}
 {% load django_tables2 %}
 {% render_table table %}
 {% load bootstrap4 %}
 {% block container %}
+
 {{ form.media }}
 
 <div class="container-fluid mt-3">
     <h4>Plant Production List</h4>
-
     {% if filter %}
-    <!--    <form action="" method="get">-->
-    <!--    <table>-->
-    <!--        {% bootstrap_form filter.form layout='inline' %}-->
-    <!--&lt;!&ndash;        <button type="submit" class="btn btn-primary ml-2 mt-1 mr-2">Filter</button>&ndash;&gt;-->
-    <!--        {% bootstrap_button "Filter" button_type="submit" button_class="btn-primary ml-2" %}-->
-    <!--        &lt;!&ndash;        {% bootstrap_button 'filter' %}&ndash;&gt;-->
-    <!--        </table>-->
-    <!--    </form>-->
-
 
     <form action="" method="get" class="form form-inline">
 
         {% bootstrap_form filter.form layout='inline' %}
-        <!--        <button type="submit" class="btn btn-primary ml-2 mt-1 mr-2">Filter</button>-->
         {% bootstrap_button "Filter" button_type="submit" button_class="btn-primary ml-2" %}
-        <!--        {% bootstrap_button 'filter' %}-->
     </form>
+
     {% endif %}
     <div class="text-right mb-2 ">
         <div class="btn-group ">
@@ -49,10 +40,4 @@
 
 </div>
 
-
 {% endblock %}
-
-
-
-
-

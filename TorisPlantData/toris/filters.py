@@ -6,8 +6,8 @@ from django import forms
 from bootstrap_datepicker_plus import DatePickerInput
 
 
-class DateInput(forms.DateInput):
-    input_type = 'date'
+# class DateInput(forms.DateInput):
+#     input_type = 'date'
 
 
 class PlantProductionFilter(django_filters.FilterSet):
@@ -21,31 +21,40 @@ class PlantProductionFilter(django_filters.FilterSet):
     shift = django_filters.CharFilter(max_length=5, lookup_expr='icontains')
     operator_name = django_filters.CharFilter(max_length=100, field_name='operator_name__name', lookup_expr='icontains')
     product_code = django_filters.CharFilter(max_length=10)
-    production = django_filters.CharFilter(max_length=10, )
+    production = django_filters.NumberFilter()
 
     class Meta:
         model = PlantProduction
-        fields = ['date', 'plant', 'shift', 'operator_name', 'no_of_winderman', 'product_code', 'start_reading',
-                  'end_reading', 'wastage']
+        fields = '__all__'
+        exclude = ('is_deleted', 'deleted_at')
+        # fields = ['date', 'plant', 'shift', 'operator_name', 'no_of_winderman', 'product_code', 'start_reading',
+        #           'end_reading', 'wastage']
 
 
 class ProductFilter(django_filters.FilterSet):
-    req_denier = django_filters.NumberFilter(field_name='req_denier', lookup_expr='gt')
+    denier = django_filters.NumberFilter(field_name='denier',lookup_expr='gte')
+
 
     class Meta:
         model = Product
-        fields = ['product_code', 'color_marking_on_bobin', 'tape_color', 'req_denier', 'req_gramage', 'req_tape_width',
-                  'cutter_spacing', 'req_streanth_per_tape_in_kg', 'req_elongation_percent', 'streanth', 'tanacity',
-                  'pp_percent', 'filler_percent', 'shiner_percent', 'color_percent', 'tpt_percent', 'uv_percent',
-                  'color_name']
+        fields = '__all__'
+        exclude = ('is_deleted', 'deleted_at','stock_of_bobin')
+        # fields = ['product_code', 'color_marking_on_bobin', 'tape_color', 'denier', 'gramage', 'tape_width',
+        #           'cutter_spacing', 'streanth_per_tape_in_kg', 'elongation_percent',  'tanacity','color_name',
+        #           'pp_percent', 'filler_percent', 'shiner_percent', 'color_percent', 'tpt_percent', 'uv_percent',
+        #           ]
 
 
 class OrderFilter(django_filters.FilterSet):
+    product_code = django_filters.CharFilter(max_length=10)
     class Meta:
         model = Order
-        fields = ['order_date', 'customer_name', 'product_code', 'order_qty']
+        fields = '__all__'
+        exclude = ('is_deleted', 'deleted_at')
+
 
 class OperatorFilter(django_filters.FilterSet):
     class Meta:
         model = Operator
-        fields = ['name']
+        fields = '__all__'
+        exclude = ('is_deleted', 'deleted_at')

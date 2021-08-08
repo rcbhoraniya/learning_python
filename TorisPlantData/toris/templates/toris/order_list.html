@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Plant Production List{% endblock %}
+{% block title %}Order List{% endblock %}
 {% load django_tables2 %}
 {% render_table table %}
 {% load bootstrap4 %}
@@ -18,7 +18,7 @@
         <!--        {% bootstrap_button 'filter' %}-->
     </form>
     {% endif %}
-    <div class="text-right mb-2 ">
+    <div class="text-right mb-2 mt-2">
         <div class="btn-group ">
             <a class="btn btn-outline-success  mr-2 " href="{% url 'toris:order_create'  %}"><i
                     class="fas fa-plus"></i>Add New </a>

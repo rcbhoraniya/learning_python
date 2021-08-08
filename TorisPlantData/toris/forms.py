@@ -2,7 +2,40 @@ from .models import PlantProduction, Product, Order, Operator, Plant
 from django.forms import ModelForm
 from bootstrap_datepicker_plus import DatePickerInput
 from django import forms
+from django.contrib.auth.forms import UserCreationForm,AuthenticationForm,UserChangeForm
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 
+class LoginForm(AuthenticationForm):
+
+    class Meta:
+        model = User
+        fields = ('username',  'password',)
+
+
+
+
+class UserRegistrationForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'password1', 'password2', 'email', 'first_name', 'last_name')
+
+    def save(self, commit=True):
+        user = super(UserRegistrationForm, self).save(commit=False)
+        user.email = self.cleaned_data['email']
+        if commit:
+            user.save()
+        return user
+
+
+
+
+
+class ScientificNameChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return obj.getScientifName()
 
 class PlantProductionForm(forms.ModelForm):
     class Meta:
@@ -14,10 +47,7 @@ class PlantProductionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(PlantProductionForm, self).__init__(*args, **kwargs)
         self.fields['shift'].empty_label = 'Select'
-        self.fields['product_code'].empty_label = 'Select'
-        # variants = Plant.objects.all()
-        # products = [(i.id,i.name) for i in variants]
-        # self.fields['plant'] = forms.ChoiceField(choices=products,initial='')
+        self.fields['product_code']=ScientificNameChoiceField(queryset=Product.objects.all(), empty_label = "Choose a Product Code",)
         self.fields['plant'].empty_label = 'Select'
         self.fields['operator_name'].empty_label = 'Select'
         self.fields['date'].widget = DatePickerInput(format='%d/%m/%Y')
@@ -26,20 +56,20 @@ class PlantProductionForm(forms.ModelForm):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = '__all__'
-
+        exclude = ('is_deleted','deleted_at')
 class OperatorForm(forms.ModelForm):
     class Meta:
         model = Operator
-        fields = '__all__'
-
+        exclude = ('is_deleted','deleted_at')
 class OrderForm(ModelForm):
     class Meta:
         model = Order
-        fields = '__all__'
         widgets = {'order_date': forms.SelectDateWidget(), }
+        exclude = ('is_deleted', 'deleted_at')
 
     def __init__(self, *args, **kwargs):
         super(OrderForm, self).__init__(*args, **kwargs)
-        self.fields['product_code'].empty_label = 'Select'
+        self.fields['product_code'] = ScientificNameChoiceField(queryset=Product.objects.all(),
+                                                                empty_label="Choose a Product Code", )
+
         self.fields['order_date'].widget = DatePickerInput(format='%d/%m/%Y')

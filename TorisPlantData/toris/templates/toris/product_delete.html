@@ -6,7 +6,7 @@
     <div class="card text-center border-dark mb-3">
         <h4 class="card-header">Product Delete #{{object.product_code}}</h4>
         <div class="card-body">
-            <form method="post">
+            <form method="post" novalidate>
                 {% csrf_token %}
                 <div class="alert alert-warning" role="alert">
                     Are you sure you want to delete <strong>{{ object.product_code }}</strong> ?

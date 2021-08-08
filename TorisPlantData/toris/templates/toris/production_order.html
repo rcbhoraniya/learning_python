@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% load bootstrap4 %}
+{% block title %}Production Order{% endblock %}
 {% block container %}
-<div class="container-fluid">
-    <h3>Plant Production Order</h3>
+<div class="container-fluid mt-3">
+    <h4>Plant Production Order</h4>
     <!--    {{orders}}-->
     <div class="text-right mb-3">
         <button type="button" class="btn btn-secondary " >
@@ -10,7 +11,7 @@
             </button>
 
     </div>
-    <table class="table table-sm">
+    <table class= "table table-bordered table-hover table-sm ">
         <tr>
             <thead >
             <tr>
@@ -24,7 +25,7 @@
                 <th scope="col">Cutter Spacing</th>
                 <th scope="col">Streanth per tape in kg</th>
                 <th scope="col">Elongation %</th>
-                <th scope="col">Streanth</th>
+
                 <th scope="col">Tanacity</th>
                 <th scope="col">PP %</th>
                 <th scope="col">Filler %</th>
@@ -44,15 +45,16 @@
 
                 <td>{{order.product_code}}</td>
                 <td>{{order.net_p}}</td>
-                <td>{{order.tape_color}}</td>
                 <td>{{order.color_marking_on_bobin}}</td>
-                <td>{{order.req_denier}}</td>
-                <td>{{order.req_gramage}}</td>
-                <td>{{order.req_tape_width}}</td>
+                <td>{{order.tape_color}}</td>
+
+                <td>{{order.denier}}</td>
+                <td>{{order.gramage}}</td>
+                <td>{{order.tape_width}}</td>
                 <td>{{order.cutter_spacing}}</td>
-                <td>{{order.req_streanth_per_tape_in_kg}}</td>
-                <td>{{order.req_elongation_percent}}</td>
-                <td>{{order.streanth}}</td>
+                <td>{{order.streanth_per_tape_in_kg}}</td>
+                <td>{{order.elongation_percent}}</td>
+
                 <td>{{order.tanacity}}</td>
                 <td>{{order.pp_percent}}</td>
                 <td>{{order.filler_percent}}</td>

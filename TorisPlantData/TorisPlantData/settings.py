@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     "django_tables2",
     'django_filters',
+    'widget_tweaks',
 
 ]
 
@@ -53,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'TorisPlantData.urls'
@@ -60,7 +62,7 @@ ROOT_URLCONF = 'TorisPlantData.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -121,7 +123,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -142,3 +144,9 @@ DATE_FORMAT = "d-m-Y"
 USE_L10N = False
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+LOGIN_REDIRECT_URL = 'toris:production_list'
+LOGOUT_REDIRECT_URL = 'toris:home'
+
+# SESSION_ENGINE = "django.contrib.sessions.backends.db"
+SESSION_COOKIE_AGE = 600
+# SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'

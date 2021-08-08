@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Registration{% endblock %}
+{% load bootstrap4 %}
+{% block container %}
+
+{% load crispy_forms_tags %}
+<style>
+
+</style>
+<div class="row justify-content-center align-items-center ">
+    <div class="card login-card col-md-5 mt-3 ">
+        <div class="row no-gutters">
+
+            <div class="col-md-12 ">
+                <div class="card-body">
+                    <div class="brand-wrapper">
+                        <h3 class="text-center">Registration</h3>
+                    </div>
+                    <h5 class="text-center">Please fill your detail</h5>
+                    <form method="post" novalidate >
+                        {% csrf_token %}
+                          {% bootstrap_form form %}
+                            {% bootstrap_button "Save" button_type="submit" button_class="btn btn-info btn-lg btn-block" %}
+
+                        <input type="hidden" name="next" value="{{ next }}">
+                    </form>
+
+
+                    <nav class="login-card-footer-nav">
+                        <a href="#!">Terms of use.</a>
+                        <a href="#!">Privacy policy</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Assumes you setup the password_reset view in your URLconf #}
+
+{% endblock %}

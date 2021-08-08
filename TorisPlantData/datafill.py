@@ -57,6 +57,8 @@
 import numpy as np
 
 excel_file = r'C:\Users\raj\Desktop\TorisProductionOrder\TPF PLANT PRO DAY. SHEET.xlsm'
+excel_file_plant_production = r'C:\Users\raj\Desktop\plant production.csv'
+excel_file_order = r'C:\Users\raj\Desktop\order.csv'
 import pandas as pd
 import time,psycopg2
 import datetime
@@ -74,22 +76,20 @@ params = {
     "password": "raja"
     }
 
-class PlantProduction:
-    def __init__(self,color_marking_on_bobin, tape_color, color_code_no , req_denier, req_gramage,
-                 req_tape_width, cutter_spacing,stock_of_bobin,req_streanth_per_tape_in_kg,req_elongation,streanth,
-                 tanacity,pp,filler,shiner,color,TPT,UV,color_name):
-
+class Product:
+    def __init__(self,color_code_no ,color_marking_on_bobin, tape_color, denier, gramage,
+                 tape_width, cutter_spacing,stock_of_bobin,streanth_per_tape_in_kg,elongation,
+                 tanacity,pp,filler,shiner,color,TPT,UV,color_name,is_deleted):
+        self.color_code_no = color_code_no
         self.color_marking_on_bobin = color_marking_on_bobin
         self.tape_color=tape_color
-        self.color_code_no = color_code_no
-        self.req_denier = req_denier
-        self.req_gramage = req_gramage
-        self.req_tape_width = req_tape_width
+        self.denier = denier
+        self.gramage = gramage
+        self.tape_width = tape_width
         self.cutter_spacing = cutter_spacing
         self.stock_of_bobin = stock_of_bobin
-        self.req_streanth_per_tape_in_kg = req_streanth_per_tape_in_kg
-        self.req_elongation = req_elongation
-        self.streanth = streanth
+        self.streanth_per_tape_in_kg = streanth_per_tape_in_kg
+        self.elongation = elongation
         self.tanacity = tanacity
         self.pp = pp
         self.filler = filler
@@ -98,6 +98,36 @@ class PlantProduction:
         self.TPT = TPT
         self.UV = UV
         self.color_name = color_name
+        self.is_deleted = is_deleted
+
+class PlantProduction:
+    def __init__(self,date, shift,  no_of_winderman, end_reading,start_reading,wastage, operator_name,plant,
+                 product_code,is_deleted):
+
+        self.date = date
+        self.shift=shift
+        self.operator_name = operator_name
+        self.no_of_winderman = no_of_winderman
+        self.product_code = product_code
+        self.end_reading = end_reading
+        self.start_reading = start_reading
+        self.plant = plant
+        self.wastage = wastage
+        self.is_deleted = is_deleted
+
+class Order:
+    def __init__(self,order_date, customer_name,  product_code, order_qty,pi_number,is_deleted):
+
+        self.order_date = order_date
+        self.customer_name=customer_name
+        self.product_code = product_code
+        self.order_qty = order_qty
+        self.product_code = product_code
+        self.pi_number = pi_number
+        self.is_deleted = is_deleted
+
+
+
 def Product_List():
     conn = psycopg2.connect(**params)
     cursor = conn.cursor()
@@ -108,43 +138,116 @@ def Product_List():
     product_list = [row[0] for row in rows]
     return product_list
 
+
+
+def insert_production_table() :
+
+    df = pd.read_csv(excel_file_plant_production)
+    df = df.replace([np.NAN],0)
+    df = df.astype(
+        {'date': 'datetime64[ns]'})
+    dftolist = df.values.tolist()
+    print(dftolist)
+    productions = []
+
+    for item in dftolist:
+        productions.append(PlantProduction(item[0], item[1], item[2], item[3], item[4], item[5], item[6], item[7],
+                                         item[8], item[9]))
+
+    connection = psycopg2.connect(**params)
+    cursor = connection.cursor()
+
+    for production in productions:
+
+        try:
+
+                cursor.execute("""
+                                INSERT INTO toris_plantproduction (date, shift, no_of_winderman,  
+                                 end_reading, start_reading, wastage, operator_name_id, plant_id,
+                                 product_code_id, is_deleted)
+                                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                        """, (production.date,production.shift,production.no_of_winderman,production.end_reading,
+                              production.start_reading,production.wastage,production.operator_name,production.plant,
+                              production.product_code,production.is_deleted))
+                print(f"Added production no - {production.product_code} successfully into plant production table")
+        except (Exception, psycopg2.Error) as error:
+            print(f"{production.product_code} Failed to insert  into plant production table", error)
+
+    connection.commit()
+
+def insert_order_table() :
+
+    df = pd.read_csv(excel_file_order)
+    df = df.replace([np.NAN],0)
+    df = df.astype({'order_date': 'datetime64[ns]'})
+    dftolist = df.values.tolist()
+    print(dftolist)
+    orders = []
+
+    for item in dftolist:
+        orders.append(Order(item[0], item[1], item[2], item[3], item[4], item[5]))
+
+    connection = psycopg2.connect(**params)
+    cursor = connection.cursor()
+    print(orders)
+    for order in orders:
+
+        try:
+
+                cursor.execute("""
+                                INSERT INTO toris_order (order_date, customer_name, product_code_id,  
+                                 order_qty, pi_number,is_deleted)
+                                VALUES (%s,%s,%s,%s,%s,%s)
+                        """, (order.order_date,order.customer_name,order.product_code,order.order_qty,
+                              order.pi_number,order.is_deleted))
+                print(f"Added order no - {order.customer_name} successfully into order table")
+        except (Exception, psycopg2.Error) as error:
+            print(f"{order.customer_name} Failed to insert  into order table", error)
+
+    connection.commit()
+
+
+
 def insert_product_table() :
     product_list = Product_List()
     df = pd.read_excel(excel_file, sheet_name='color_code')
     df = df.replace([np.NAN],0)
     dftolist = df.values.tolist()
-    # print(dftolist)
+    print(dftolist)
     productds = []
 
     for item in dftolist:
-        productds.append(PlantProduction(item[0], item[1], item[2], item[3], item[4], item[5], item[6], item[7],
+        productds.append(Product(item[0], item[1], item[2], item[3], item[4], item[5], item[6], item[7],
                                          item[8], item[9], item[10], item[11], item[12], item[13], item[14], item[15],
                                          item[16], item[17], item[18]))
 
     connection = psycopg2.connect(**params)
     cursor = connection.cursor()
 
-    for productd in productds:
-        print(productd.color_code_no)
+    for product in productds:
+        print(product.color_code_no)
         try:
-            if productd.color_code_no not in product_list:
+            if product.color_code_no not in product_list:
                 cursor.execute("""
                                 INSERT INTO toris_product (product_code, color_marking_on_bobin, tape_color, 
-                                req_denier, req_gramage, req_tape_width, cutter_spacing, stock_of_bobin,
-                                req_streanth_per_tape_in_kg, req_elongation_percent, streanth, tanacity,pp_percent,
-                                filler_percent, shiner_percent, color_percent, tpt_percent, uv_percent, color_name)
+                                denier, gramage, tape_width, cutter_spacing, stock_of_bobin,
+                                streanth_per_tape_in_kg, elongation_percent,  tanacity,pp_percent,
+                                filler_percent, shiner_percent, color_percent, tpt_percent, uv_percent, 
+                                color_name,is_deleted)
                                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                        """, (productd.color_code_no,productd.color_marking_on_bobin,productd.tape_color,productd.req_denier,
-                              productd.req_gramage,productd.req_tape_width,productd.cutter_spacing,productd.stock_of_bobin,
-                              productd.req_streanth_per_tape_in_kg,productd.req_elongation,productd.streanth,productd.tanacity,
-                              productd.pp,productd.filler,productd.shiner,productd.color,productd.TPT,productd.UV,productd.color_name))
-                print(f"Added color code no - {productd.color_code_no} successfully into product table")
+                        """, (product.color_code_no,product.color_marking_on_bobin,product.tape_color,
+                              product.denier,product.gramage,product.tape_width,product.cutter_spacing,
+                              product.stock_of_bobin,product.streanth_per_tape_in_kg,product.elongation,
+                              product.tanacity,product.pp,product.filler,product.shiner,product.color,
+                              product.TPT,product.UV,product.color_name,product.is_deleted))
+                print(f"Added color code no - {product.color_code_no} successfully into product table")
         except (Exception, psycopg2.Error) as error:
-            print(f"{productd.color_code_no} Failed to insert  into product table", error)
+            print(f"{product.color_code_no} Failed to insert  into product table", error)
 
     connection.commit()
 
 if __name__ == '__main__':
 
-    insert_product_table()
-
+    # insert_product_table()
+    # insert_production_table()
+    # insert_order_table()

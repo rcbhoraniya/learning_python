@@ -6,7 +6,8 @@
     <div class="card  border-dark mb-3">
         <h4 class="card-header text-center">Order Edit Form#{{object.id}}</h4>
         <div class="card-body">
-            <form method="post">{% csrf_token %}
+            <form method="post" novalidate>
+                {% csrf_token %}
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-lg-4">
