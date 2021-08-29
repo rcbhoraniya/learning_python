@@ -47,20 +47,22 @@ class PlantProductionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(PlantProductionForm, self).__init__(*args, **kwargs)
         self.fields['shift'].empty_label = 'Select'
-        self.fields['product_code']=ScientificNameChoiceField(queryset=Product.objects.all(), empty_label = "Choose a Product Code",)
+        self.fields['product_code']=ScientificNameChoiceField(queryset=Product.objects.all().order_by('product_code'), empty_label = "Choose a Product Code",)
         self.fields['plant'].empty_label = 'Select'
         self.fields['operator_name'].empty_label = 'Select'
-        self.fields['date'].widget = DatePickerInput(format='%d/%m/%Y')
+        self.fields['date'].widget = DatePickerInput(format='%d/%m/%Y',attrs={'autofocus': True})
 
 
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         exclude = ('is_deleted','deleted_at')
+
 class OperatorForm(forms.ModelForm):
     class Meta:
         model = Operator
         exclude = ('is_deleted','deleted_at')
+
 class OrderForm(ModelForm):
     class Meta:
         model = Order
@@ -72,4 +74,4 @@ class OrderForm(ModelForm):
         self.fields['product_code'] = ScientificNameChoiceField(queryset=Product.objects.all(),
                                                                 empty_label="Choose a Product Code", )
 
-        self.fields['order_date'].widget = DatePickerInput(format='%d/%m/%Y')
+        self.fields['order_date'].widget = DatePickerInput(format='%d/%m/%Y',attrs={'autofocus': True})

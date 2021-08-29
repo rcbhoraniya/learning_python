@@ -1,7 +1,7 @@
 import json, csv
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView, RedirectView
 from .models import Product, PlantProduction, Order, Operator
-from django.http import HttpResponse
+from django.http import HttpResponse, request
 from .forms import PlantProductionForm, ProductForm, OrderForm, OperatorForm
 from django.db.models import Avg, Max, Min, Sum, Count, F
 import pandas as pd
@@ -10,18 +10,18 @@ from django.shortcuts import redirect
 from .tables import PlantProductionTable, ProductTable, OrderTable, OperatorTable
 from .filters import PlantProductionFilter, ProductFilter, OrderFilter, OperatorFilter
 from django_filters.views import FilterView
-from django_tables2.views import SingleTableMixin
+from django_tables2.views import SingleTableMixin, MultiTableMixin
 from django_tables2.export.views import ExportMixin
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.auth.views import *
 from django.contrib.auth.forms import *
 from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
+
 pd.set_option('display.width', 1500)
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 50)
-
 
 
 class HomeView(TemplateView):
@@ -32,13 +32,17 @@ class PermissionDeniedView(TemplateView):
     template_name = 'toris/permission_denied.html'
 
 
-class UserAccessMixin(PermissionRequiredMixin, PermissionDenied):
+class UserAccessMixin(PermissionRequiredMixin, LoginRequiredMixin):
+
+    # def __init__(self, *args: object):
+    #     super().__init__(args)
+    #     self.request = None
 
     def dispatch(self, request, *args, **kwargs):
-        if (not self.request.user.is_authenticated):
-            return redirect_to_login(self.request.get_full_path(), self.get_login_url(), self.get_redirect_field_name())
+        if not request.user.is_authenticated:
+            return redirect_to_login(request.get_full_path(), self.get_login_url(), self.get_redirect_field_name())
         if not self.has_permission():
-            # raise PermissionDenied()
+
             return redirect('toris:permissiondenied')
         return super(UserAccessMixin, self).dispatch(request, *args, **kwargs)
 
@@ -48,6 +52,9 @@ class UserRegistrationView(CreateView):
     form_class = UserCreationForm
     template_name = 'toris/registration.html'
     success_url = reverse_lazy('toris:login')
+
+
+
 
 
 @method_decorator(login_required(login_url='toris:login', redirect_field_name='next'), name='dispatch')
@@ -61,24 +68,18 @@ class PlantProductionListView(ExportMixin, SingleTableMixin, FilterView, ):
     export_name = 'Plant Production'
 
     def get_queryset(self):
-        # shift_uniq = self.model.objects.order_by('shift').values_list('shift', flat=True).distinct()
-        # plant_uniq = self.model.objects.order_by('plant__name').values_list('plant__name', flat=True).distinct()
-        # for plant in plant_uniq:
-        #
-        #     date_uniq = self.model.objects.filter(plant__name = plant).order_by('date').values_list('date', flat=True).distinct()
-        #     for dates in date_uniq:
-        #         for shifts in shift_uniq:
-        #
-        #             print(plant)
-        #             print(dates)
-        #             print(shifts)
-        #             qs1 = self.model.objects.filter(date = dates).filter(shift = shifts).filter(plant__name = plant)
-        #             print(qs1)
-
+        # qs = self.model.plantmanager.tpf_day().annotate(production_in_kg=(F('end_reading') - F('start_reading')))
         qs = self.model.objects.all().annotate(production_in_kg=(F('end_reading') - F('start_reading'))).order_by(
             'date', 'end_reading')
         filtered_list = PlantProductionFilter(self.request.GET, queryset=qs)
         return filtered_list.qs
+    # def get_context_data(self, **kwargs):
+    #
+    #     context = super(PlantProductionListView, self).get_context_data(**kwargs)
+    #     # f = PlantProductionFilter(self.request.GET, queryset=self.model.objects.all())
+    #     # has_filter = field in self.request.GET
+    #     context['has_filter'] = 'has_filter'
+    #     return context
 
 
 @method_decorator(login_required(login_url='toris:login', redirect_field_name='next'), name='dispatch')
@@ -87,12 +88,12 @@ class ProductListView(ExportMixin, SingleTableMixin, FilterView, ):
     table_class = ProductTable
     template_name = 'toris/product_list.html'
     filterset_class = ProductFilter
-    table_pagination = {"per_page": 10}
+    table_pagination = {"per_page": 20}
     export_formats = ['xlsx', 'csv']
     export_name = 'Product'
 
     def get_queryset(self):
-        qs = self.model.objects.all()
+        qs = self.model.objects.all().order_by('product_code')
         filtered_list = ProductFilter(self.request.GET, queryset=qs)
         return filtered_list.qs
 
@@ -103,12 +104,12 @@ class OrderListView(ExportMixin, SingleTableMixin, FilterView, ):
     table_class = OrderTable
     template_name = 'toris/order_list.html'
     filterset_class = OrderFilter
-    table_pagination = {"per_page": 10}
+    table_pagination = {"per_page": 20}
     export_formats = ['xlsx', 'csv']
     export_name = 'Order'
 
     def get_queryset(self):
-        qs = self.model.objects.all()
+        qs = self.model.objects.all().order_by('order_date')
         filtered_list = ProductFilter(self.request.GET, queryset=qs)
         return filtered_list.qs
 
@@ -130,9 +131,9 @@ class OperatorListView(ExportMixin, SingleTableMixin, FilterView, ):
 
 
 class PlantProductionCreateView(UserAccessMixin, CreateView):
-    raise_exception = False
+    raise_exception = True
     permission_required = 'toris.add_plantproduction'
-    permission_denied_message = ''
+    permission_denied_message = 'No permission'
     login_url = 'toris:login'
     redirect_field_name = 'next'
 
@@ -140,6 +141,8 @@ class PlantProductionCreateView(UserAccessMixin, CreateView):
     form_class = PlantProductionForm
     template_name = 'toris/plant-production-add.html'
     success_url = reverse_lazy('toris:production_list')
+
+
 
 
 class ProductCreateView(UserAccessMixin, CreateView):
@@ -377,7 +380,7 @@ class ProductionOrderListView(ListView):
         production_order = production_order[['product_code', 'net_p']]
         production_order = production_order.merge(product_df, left_on='product_code', right_on='product_code',
                                                   how='left')
-        production_order = production_order.sort_values(['net_p'])
+        production_order = production_order.sort_values(['product_code'])
         production_order = production_order[production_order['net_p'] != 0]
         production_order = production_order.drop(columns=['id', 'is_deleted', 'deleted_at'])
         production_order = production_order.to_dict('records')
@@ -408,10 +411,10 @@ def export_production_order_csv(request):
     production_order = production_order[['product_code', 'net_p']]
     production_order = production_order.merge(product_df, left_on='product_code', right_on='product_code',
                                               how='left')
-    production_order = production_order.sort_values(['net_p'])
+    production_order = production_order.sort_values(['product_code'])
     production_order = production_order[production_order['net_p'] != 0]
     production_order = production_order.drop(columns=['id', 'is_deleted', 'deleted_at'])
-    print(production_order)
+    # print(production_order)
     production_order = production_order.values.tolist()
     for item in production_order:
         writer.writerow(item)
@@ -420,7 +423,8 @@ def export_production_order_csv(request):
 
 def load_start_reading(request):
     plant_id = request.GET.get('plant')
-    query = PlantProduction.objects.filter(plant=plant_id).order_by('date', 'end_reading')
-    end_reading = query[len(query) - 1].end_reading
-    print(end_reading)
+    query = PlantProduction.objects.filter(plant=plant_id).order_by('end_reading').last()
+    # print(query)
+    end_reading = query.end_reading
+    # print(end_reading)
     return HttpResponse(json.dumps(end_reading), content_type='application/json')

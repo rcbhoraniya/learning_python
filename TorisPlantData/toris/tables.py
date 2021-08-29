@@ -28,11 +28,16 @@ class PlantProductionTable(tables.Table):
     # color_marking_on_bobin = tables.Column()
     class Meta:
         model = PlantProduction
-        template_name = "django_tables2/bootstrap4.html"
+        template_name = "toris/table.html"
+
+        # template_name = "django_tables2/bootstrap4.html"
         fields = ('sr', 'date', 'plant', 'shift', 'operator_name', 'no_of_winderman', 'product_code',
                   'product_code__color_marking_on_bobin', 'product_code__tape_color', 'product_code__denier',
                   'start_reading', 'end_reading', 'production_in_kg', 'wastage',)
-        attrs = {"class": "table table-bordered table-hover table-sm "}
+        attrs = {"class": "table table-bordered table-hover table-sm ",
+
+                 }
+
 
     def render_sr(self):
         self.row_sr = getattr(self, 'row_sr',
@@ -108,7 +113,7 @@ class OperatorTable(tables.Table):
     class Meta:
         model = Operator
         template_name = "django_tables2/bootstrap4.html"
-        fields = ('sr', 'name',)
+        fields = ('sr', 'id', 'name',)
         attrs = {"class": "table table-bordered table-hover table-sm "}
 
     def render_sr(self):

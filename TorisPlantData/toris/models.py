@@ -31,39 +31,41 @@ class SoftDeleteModel(models.Model):
 
 # Create your models here.
 class Plant(SoftDeleteModel):
-    name = models.CharField(max_length=3, verbose_name='Plant')
+    name = models.CharField(max_length=3, verbose_name='Plant',unique=True)
 
     def __str__(self):
         return str(self.name)
 
 
 class Operator(SoftDeleteModel):
-    name = models.CharField(max_length=200, verbose_name='Operator Name')
+    name = models.CharField(max_length=200, verbose_name='Operator Name',unique=True)
 
     def __str__(self):
         return str(self.name)
 
 
 class Product(SoftDeleteModel):
-    product_code = models.IntegerField(verbose_name='Product Code')
-    color_marking_on_bobin = models.CharField(max_length=200, verbose_name='Color marking on bobin')
-    tape_color = models.CharField(max_length=100, verbose_name='Tape Color')
-    denier = models.IntegerField(verbose_name='Denier')
-    gramage = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Gramage')
-    tape_width = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Tape Width in mm')
-    cutter_spacing = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Cutter Spacing in mm')
-    stock_of_bobin = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Bobin Stock')
+    product_code = models.IntegerField(verbose_name='Product Code',unique=True)
+    color_marking_on_bobin = models.CharField(max_length=200, verbose_name='Color marking on bobin',null=True, default=None)
+    tape_color = models.CharField(max_length=100, verbose_name='Tape Color',null=True, default=None)
+    denier = models.IntegerField(verbose_name='Denier',null=True, default=None)
+    gramage = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Gramage',null=True, default=None)
+    tape_width = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Tape Width in mm',null=True, default=None)
+    cutter_spacing = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Cutter Spacing in mm',null=True, default=None)
+    stock_of_bobin = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Bobin Stock',null=True, default=None)
     streanth_per_tape_in_kg = models.DecimalField(max_digits=10, decimal_places=2,
-                                                  verbose_name='Strength per tape in kg')
-    elongation_percent = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Elongation %')
-    tanacity = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Tanacity')
-    pp_percent = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='PP %')
-    filler_percent = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Filler %')
-    shiner_percent = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Shiner %')
-    color_percent = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Color %')
-    tpt_percent = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='TPT %')
-    uv_percent = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='UV %')
-    color_name = models.CharField(max_length=50, verbose_name='Color name')
+                                                  verbose_name='Strength per tape in kg',null=True, default=None)
+    elongation_percent = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Elongation %',null=True, default=None)
+    tanacity = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Tanacity',null=True, default=None)
+    pp_percent = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='PP %',null=True, default=None)
+    filler_percent = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Filler %',null=True, default=None)
+    shiner_percent = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Shiner %',null=True, default=None)
+    color_percent = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Color %',null=True, default=None)
+    tpt_percent = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='TPT %',null=True, default=None)
+    uv_percent = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='UV %',null=True, default=None)
+    color_name = models.CharField(max_length=50, verbose_name='Color name',null=True, default=None)
+
+
 
     def __str__(self):
         return str(self.product_code)
@@ -78,9 +80,7 @@ class Product(SoftDeleteModel):
 class PlantProduction(SoftDeleteModel):
 
     SHIFT_CHOICES = (("Day", "DAY"), ("Night", "NIGHT"))
-    PLANT_CHOICES = (("TPF", "TPF"), ("TPP", "TPP"))
     plant = models.ForeignKey(Plant, on_delete=models.SET_NULL, null=True)
-    # plant = models.CharField(max_length=3, choices=PLANT_CHOICES)
     date = models.DateField(verbose_name='Production Date')
     shift = models.CharField(max_length=5, choices=SHIFT_CHOICES, default='DAY', verbose_name='Shift')
     operator_name = models.ForeignKey(Operator, on_delete=models.SET_NULL, null=True, verbose_name='Operator Name')
@@ -90,6 +90,8 @@ class PlantProduction(SoftDeleteModel):
     start_reading = models.IntegerField(verbose_name='Start Reading')
     wastage = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Wastage')
 
+    plantmanager = PlantQuerySet.as_manager()
+
     def __str__(self):
         return str(self.product_code)
 
@@ -97,11 +99,13 @@ class PlantProduction(SoftDeleteModel):
         return reverse('toris:production_detail', args=[self.pk])
 
 
+
     def production_field(self ):
         production = self.end_reading - self.start_reading
 
         return production
 
+    production = property(production_field)
 
 class Order(SoftDeleteModel):
 

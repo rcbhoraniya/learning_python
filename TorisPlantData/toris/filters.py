@@ -21,14 +21,14 @@ class PlantProductionFilter(django_filters.FilterSet):
     shift = django_filters.CharFilter(max_length=5, lookup_expr='icontains')
     operator_name = django_filters.CharFilter(max_length=100, field_name='operator_name__name', lookup_expr='icontains')
     product_code = django_filters.CharFilter(max_length=10)
-    production = django_filters.NumberFilter()
+    production_in_kg = django_filters.NumberFilter(field_name='production_in_kg',lookup_expr='lte')
 
     class Meta:
         model = PlantProduction
-        fields = '__all__'
+        # fields = '__all__'
         exclude = ('is_deleted', 'deleted_at')
-        # fields = ['date', 'plant', 'shift', 'operator_name', 'no_of_winderman', 'product_code', 'start_reading',
-        #           'end_reading', 'wastage']
+        fields = ['date', 'plant', 'shift', 'operator_name', 'product_code', 'start_reading',
+                  'end_reading', 'wastage','product_code__denier']
 
 
 class ProductFilter(django_filters.FilterSet):

@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 {% block title %}Plant Production List{% endblock %}
 {% load django_tables2 %}
@@ -8,22 +7,35 @@
 
 {{ form.media }}
 
+
 <div class="container-fluid mt-3">
     <h4>Plant Production List</h4>
+
     {% if filter %}
+    <div class="card login-card col-md-12 mt-3 bg-form ">
+        <div class="row no-gutters">
 
-    <form action="" method="get" class="form form-inline">
+            <div class="col-md-12 ">
+                <div class="card-body">
+                    <div class="brand-wrapper">
+                        <h5 class="text-left">Filter</h5>
+                    </div>
+                    <form action="" method="get" class="form form-inline ">
 
-        {% bootstrap_form filter.form layout='inline' %}
-        {% bootstrap_button "Filter" button_type="submit" button_class="btn-primary ml-2" %}
-    </form>
-
+                        {% bootstrap_form filter.form layout='inline' %}
+                        {% bootstrap_button "Filter" button_type="submit" button_class="btn-primary ml-2" %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     {% endif %}
     <div class="text-right mb-2 ">
         <div class="btn-group ">
-            <a class="btn btn-outline-success  mr-2 " href="{% url 'toris:production_create'  %}"><i
+            <a class="btn btn-outline-success mt-2 mr-2 " href="{% url 'toris:production_create'  %}"><i
                     class="fas fa-plus"></i>Add New </a>
-            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+            <button type="button" class="btn btn-secondary dropdown-toggle mt-2" data-toggle="dropdown"
+                    aria-haspopup="true"
                     aria-expanded="false">
                 Downloads
             </button>
@@ -35,6 +47,8 @@
             </div>
         </div>
     </div>
+
+
 
     {% render_table table %}
 

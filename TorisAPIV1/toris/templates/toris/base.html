@@ -1,0 +1,71 @@
+{% load static %}
+
+<html lang="en">
+<head>
+    <title>{% block title %}Plant History{% endblock %}</title>
+    {% block css %}
+
+    <link href="{% static 'fontawesome_free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'fontawesome_free/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'fontawesome_free/css/brands.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'fontawesome_free/css/solid.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'toris/css/toris.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'toris/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
+
+
+    {% endblock %}
+
+    {% block js %}
+
+    <script src="{% static 'fontawesome_free/js/all.min.js' %}"></script>
+    <script src="{% static 'toris/js/variables.js' %}"></script>
+    <script src="{% static 'toris/js/axios.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
+<!--    <script src="https://unpkg.com/vue-router@2.0.0/dist/vue-router.js"></script>-->
+
+<!--    <script src="{% static 'toris/js/vue.js' %}"></script>-->
+<!--    <script src="{% static 'toris/js/vue_router.js' %}"></script>-->
+    <script src="{% static 'toris/js/plant_production.js' %}"></script>
+    <script src="{% static 'toris/js/product.js' %}"></script>
+    <script src="{% static 'toris/js/order.js' %}"></script>
+    <script src="{% static 'toris/js/app.js' %}"></script>
+    {% endblock %}
+
+
+</head>
+<body>
+<div id="app">
+    <h1 class="d-flex justify-content-center">Toris Plant Production</h1>
+    <h5 class="d-flex justify-content-center">Toris Plant Production Portal</h5>
+    <nav class="navbar navbar-expand-sm bg-light navbar-dark">
+        <ul class="navbar-nav">
+            <li class="nav-item m-1">
+                <router-link class="btn btn-light btn-outline-primary" to="/home">Home</router-link>
+            </li>
+
+        </ul>
+        <ul class="navbar-nav">
+            <li class="nav-item m-1">
+                <router-link class="btn btn-light btn-outline-primary" to="/product">Product</router-link>
+            </li>
+
+        </ul>
+        <ul class="navbar-nav">
+            <li class="nav-item m-1">
+                <router-link class="btn btn-light btn-outline-primary" to="/order">Order </router-link>
+            </li>
+
+        </ul>
+
+    </nav>
+    <router-view></router-view>
+    {{name}}
+    {% block content %}
+    {% endblock %}
+</div>
+
+
+</body>
+</html>
+
+
