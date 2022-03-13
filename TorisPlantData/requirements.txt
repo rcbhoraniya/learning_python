@@ -151,7 +151,7 @@ pytube==10.8.5
 PyTweening==1.0.3
 pytz==2020.1
 pywhatkit==3.8
-pywin32==228
+pywin32==301
 pywin32-ctypes==0.2.0
 pywinpty==0.5.7
 PyYAML==5.4.1
