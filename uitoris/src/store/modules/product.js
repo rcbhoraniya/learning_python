@@ -1,103 +1,114 @@
-import Product from "../../apis/productApi"
+import { httpServices } from "@/services"
+// import { ProductService } from "@/services"
+import { productURL } from '@/services/constants';
+
 
 // initial state
-
-const state = {
-    productall: [],
-    product: {},
-};
-
-// getters
-
-const getters = {
-
-    productListLength: (state) => {
-        return state.productall.length
-    }
-}
-
-// actions
-
-const actions = {
-
-    getProducts: (context) => {
-        Product.getAll().then((response) => {
-            context.commit('setProducts', response.data)
-        }).catch(error => {
-            console.log(error)
-        })
-    },
-
-    getProductById: (context, id) => {
-        Product.get(id).then(response => {
-            context.commit('setProduct', response.data)
-        }).catch(error => {
-            console.log(error)
-        })
-    },
-
-    addProduct: (context, data) => {
-
-        Product.create(data).then(response => {
-            context.commit('AddProduct', response.data)
-        }).catch(error => {
-            console.log(error)
-        })
-    },
-    editProduct: (context, data) => {
-        // console.log("data", data);
-        Product.update(data.id, data).then(response => {
-            // console.log('res', response.data)
-            context.commit('EditProduct', response.data)
-
-        }).catch(error => {
-            console.log(error)
-        })
-    },
-
-    deleteProduct(context, id) {
-        Product.delete(id).then(response => {
-            console.log(response.data);
-            context.commit('DeleteProduct', id);
-
-        }).catch(error => {
-            console.log(error)
-        })
-
-    },
-}
-
-// mutations
-
-const mutations = {
-
-    setProducts: (state, payload) => {
-        state.productall = payload;
-    },
-
-    setProduct: (state, payload) => {
-        state.product = payload;
-    },
-
-    AddProduct: (state, payload) => {
-        state.productall.push(payload);
-    },
-
-    EditProduct: (state, payload) => {
-        const index = state.productall.findIndex(item => item.id === payload.id);
-        if (index !== -1) state.productall.splice(index, 1, payload);
-    },
-
-    DeleteProduct: (state, payload) => {
-        let index = state.productall.findIndex(item => item.id == payload)
-        state.productall.splice(index, 1)
-    },
-}
-
-export default {
+export const product = {
     namespaced: true,
-    state,
-    getters,
-    actions,
-    mutations
+    state: {
+        productall: [],
+        product: {},
+    },
+    getters: {
+        productListLength: (state) => {
+            return state.productall.length
+        }
+    },
+    actions: {
+        getProducts: async(context) => {
+            try {
+                const response = await httpServices.getAll(productURL)
+                context.commit('setProducts', response.data)
+                return await Promise.resolve(response)
+            } catch (error) {
+                let message = (error.response && error.response.data.detail) || error.message || error.toString();
+                context.dispatch('alert/error', message, { root: true });
+                return await Promise.reject(error)
+            }
+        },
+
+        getProductById: async(context, id) => {
+            try {
+                const response = await httpServices.get(productURL, id)
+                context.commit('setProduct', response.data)
+                return await Promise.resolve(response)
+            } catch (error) {
+                let message = (error.response && error.response.data.detail) || error.message || error.toString();
+                context.dispatch('alert/error', message, { root: true });
+                return await Promise.reject(error)
+            }
+        },
+
+        addProduct: async(context, data) => {
+
+            try {
+                const response = await httpServices.create(productURL, data)
+                context.commit('AddProduct', response.data)
+                return await Promise.resolve(response)
+            } catch (error) {
+                let message = (error.response && error.response.data.detail) || error.message || error.toString();
+                context.dispatch('alert/error', message, { root: true });
+                return await Promise.reject(error)
+            }
+        },
+        editProduct: async(context, data) => {
+            // console.log("data", data);
+            try {
+                const response = await httpServices.update(productURL, data.id, data)
+                    // console.log('res', response.data)
+                context.commit('EditProduct', response.data)
+                return await Promise.resolve(response)
+            } catch (error) {
+                let message = (error.response && error.response.data.detail) || error.message || error.toString();
+                context.dispatch('alert/error', message, { root: true });
+                return await Promise.reject(error)
+            }
+        },
+
+        deleteProduct: async(context, id) => {
+            try {
+                const response = await httpServices.delete(productURL, id)
+                console.log(response.data)
+                context.commit('DeleteProduct', id)
+                return await Promise.resolve(response)
+            } catch (error) {
+                let message = (error.response && error.response.data.detail) || error.message || error.toString();
+                context.dispatch('alert/error', message, { root: true });
+                return await Promise.reject(error)
+            }
+
+        },
+        clearState(context) {
+            context.commit('ClearState');
+        },
+    },
+    mutations: {
+        setProducts: (state, payload) => {
+            state.productall = payload;
+        },
+
+        setProduct: (state, payload) => {
+            state.product = payload;
+        },
+
+        AddProduct: (state, payload) => {
+            state.productall.push(payload);
+        },
+
+        EditProduct: (state, payload) => {
+            console.log(payload);
+            const index = state.productall.findIndex(item => item.id === payload.id);
+            if (index !== -1) state.productall.splice(index, 1, payload);
+        },
+
+        DeleteProduct: (state, payload) => {
+            let index = state.productall.findIndex(item => item.id == payload)
+            state.productall.splice(index, 1)
+        },
+        ClearState: (state) => {
+            state.productall = [];
+            state.product = {};
+        },
+    },
 }

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %} Purchase Required List {% endblock title %}
+{% block content %}
+
+<h3 style="color:green; font-style: bold;">Purchase Required Item List</h3>
+<div class="float-end mb-2">
+    <a class="btn btn-info" href="{% url 'inventory:new-purchase' %}">Add New Purchase</a>
+</div>
+{% if object_list %}
+<table class="table table-hover table-sm mt-5">
+    <thead class="table-light">
+    <tr>
+        <th>Stock Name</th>
+        <th>HSN No</th>
+        <th>Sales Price with GST</th>
+        <th>Purchase Price with GST</th>
+        <th>Unit</th>
+        <th>Current Stock in Inventory</th>
+        <th>Inventory Alert Level</th>
+        <th>Purchase Reqd. Qty</th>
+    </thead>
+
+
+    <tbody>
+    {% for stock in object_list %}
+    <tr>
+        <td>{{ stock.product }}</td>
+        <td>{{ stock.product.hsn }}</td>
+        <td>{{ stock.product.salse_price_with_gst|floatformat:2 }}</td>
+        <td>{{ stock.product.purchase_price_with_gst|floatformat:2 }}</td>
+        <td>{{ stock.product.unit }}</td>
+        <td>{{ stock.quantity }}</td>
+        <td>{{ stock.alert_level }}</td>
+        <td><strong>{{ stock.purchase_reqd_qty }}</strong></td>
+
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<!--Pagination-->
+<div class="pagination justify-content-center">
+
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+{% else %}
+<div style="color: green; font-style: bold; font-size: 1.5rem; text-align: center;">WOW, SUCH EMPTY</div>
+{% endif %}
+
+{% endblock content %}

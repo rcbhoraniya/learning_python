@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load extra %}
+{% load humanize %}
+{% block title %}HistoricalData List{% endblock %}
+{% block content %}
+{% if historicaldata_list %}
+
+<h4 class="text-center mt-3 alert alert-success ">HistoricalData List</h4>
+
+<table id="historicaldata-list-table" class="table table-hover table-sm">
+    <thead class="table-light">
+    <tr>
+        <th>#</th>
+        <th>Company Name</th>
+        <th>Date</th>
+        <th>Open</th>
+        <th>High</th>
+        <th>Low</th>
+        <th>Close</th>
+        <th>Adj.close</th>
+        <th>Volume</th>
+        <th>Delete</th>
+        <th>Update</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for stock in historicaldata_list %}
+    <tr>
+        <th>{{forloop.counter}}</th>
+        <td>{{stock.company}}</td>
+        <td>{{stock.date|date:'d-m-Y' }}</td>
+        <td>{{stock.open}}</td>
+        <td>{{stock.high}}</td>
+        <td>{{stock.low}}</td>
+        <td>{{stock.close}}</td>
+        <td>{{stock.adj_close}}</td>
+        <td>{{stock.volume}}</td>
+        <td><a class="btn btn-danger btn-sm" href="{% url 'stocks:historicaldata_delete' stock.id %}">Delete</a></td>
+        <td><a class="btn btn-info btn-sm" href="{% url 'stocks:historicaldata_update' stock.id %}">Update</a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<p>No stocks are available.</p>
+{% endif %}
+
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
+{% endblock %}
+
+{% block script %}
+$(document).ready(function() {
+$('#historicaldata-list-table').DataTable({searching: false, paging: false, info: false});
+} );
+
+{% endblock %}
+
+

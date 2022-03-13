@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %} {{title}} {% endblock title %}
+{% block content %}
+<h3 style="color:green; font-style: bold;">{{title}}</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {{ form.name.errors }}
+    {{ form.address.errors }}
+    {{ form.state.errors }}
+    {{ form.district.errors }}
+    {{ form.city.errors }}
+    {{ form.zip.errors }}
+    {{ form.name.errors }}
+    {{ form.phone.errors }}
+    {{ form.email.errors }}
+    {{ form.gstin.errors }}
+    <div class="form-group col-md-10">
+        <label for="{{ form.name.id_for_label }}">Name:</label>
+        {{ form.name }}
+    </div>
+
+    <div class="form-group col-md-10">
+        <label for="{{ form.address.id_for_label }}">Address:</label>
+        {{ form.address }}
+    </div>
+    <div class="row">
+        <div class="form-group col-md-5">
+            <label for="{{ form.state.id_for_label }}">State:</label>
+            {{ form.state }}
+        </div>
+        <div class="form-group col-md-5">
+            <label for="{{ form.district.id_for_label }}">District:</label>
+            {{ form.district }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col-md-5">
+            <label for="{{ form.city.id_for_label }}">city:</label>
+            {{ form.city }}
+        </div>
+        <div class="form-group col-md-5">
+            <label for="{{ form.zip.id_for_label }}">zip:</label>
+            {{ form.zip }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col-md-5">
+            <label for="{{ form.phone.id_for_label }}">Phone No:</label>
+            {{ form.phone }}
+        </div>
+        <div class="form-group col-md-5">
+            <label for="{{ form.email.id_for_label }}">Email ID:</label>
+            {{ form.email }}
+        </div>
+    </div>
+    <div class="form-group col-md-5">
+        <label for="{{ form.gstin.id_for_label }}">GSTIN No:</label>
+        {{ form.gstin }}
+    </div>
+    <div class="text-center mt-2">
+        <button type="submit" class="btn btn-success ">{{ savebtn }}</button>
+        {% if title == "New Customer" %}
+        <button type="reset" class="btn btn-primary">Reset</button>
+        {% endif %}
+        {% if delbtn %}
+        <a href="{% url 'delete-customer' customer.pk %}" class="btn btn-danger"> Delete Customer </a>
+        {% endif %}
+        <a href="{% url 'customer-list' %}" class="btn btn-primary">Cancel</a>
+    </div>
+</form>
+{% endblock content %}

@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ 	<!-- Required meta tags -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>
+		{% block title %}
+		GST Billing
+		{% endblock %}
+	</title>
+	{% block metatags %}
+	{% endblock %}
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="{% static 'bootstrap-5.0.2-dist/css/bootstrap.min.css'%}">
+	<link rel="stylesheet" href="{% static 'main.css' %}">
+	<!-- DataTables CSS  -->
+	<link rel="stylesheet" href="{% static 'DataTables/jquery.dataTables.min.css' %}">
+	<link rel="stylesheet" href="{% static 'DataTables/dataTables.bootstrap4.min.css' %}">
+
+	{% block includecss %}
+	{% endblock %}
+
+</head>
+<body>
+<div class="row justify-content-center align-items-center ">
+    <div class="col-sm-3  ">
+        <h5 class="text-center alert alert-info mt-2">Login</h5>
+        <form action="" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="hidden" name="next" value="{{ next }}">
+            <td><input type="submit" value="Login" class="btn btn-success"></td>
+    </form>
+    </div>
+</div>
+</body>
+</html>

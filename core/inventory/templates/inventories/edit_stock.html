@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %} {{title}} {% endblock title %}
+{% block content %}
+
+<h3 style="color:green; font-style: bold; ">{{title}}</h3>
+
+<form method="post">
+
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <div class="form-group">
+        {{ form.name.errors }}
+        <label for="{{ form.name.id_for_label }}"  class="form-label">Name:</label>
+        {{ form.name }}
+    </div>
+    <div class="form-group ">
+        {{ form.quantity.errors }}
+        <label for="{{ form.quantity.id_for_label }}"  class="form-label">Quantity:</label>
+        {{ form.quantity }}
+    </div>
+
+
+
+     <div class="text-left mt-5">
+        <button type="submit" class="btn btn-success">{{ savebtn }}</button>
+        {% if title == "New Stock" %}
+        <button type="reset" class="btn btn-info">Reset</button>
+        {% endif %}
+        {% if delbtn %}
+        <a href="{% url 'delete-stock' object.pk %}" class="btn btn-danger"> Delete Stock </a>
+        {% endif %}
+        <a href="{% url 'inventory' %}" class="btn btn-primary">Cancel</a>
+    </div>
+
+</form>
+
+{% endblock content %}

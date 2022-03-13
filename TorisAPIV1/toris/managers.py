@@ -12,17 +12,17 @@ class SoftDeleteManager(models.Manager):
         return super().get_queryset().filter(deleted_at__isnull=True)
 
 
-class PlantQuerySet(models.QuerySet):
-    def tpf_day(self):
-        return self.filter(plant__name='TPF', shift='Day')
-
-    def tpf_night(self):
-        return self.filter(plant__name='TPF', shift='Night')
-
-    def tpp_day(self):
-        return self.filter(plant__name='TPP', shift='Day')
-
-    def tpp_night(self):
-        return self.filter(plant__name='TPP', shift='Night')
+# class PlantQuerySet(models.QuerySet):
+#     def tpf_day(self):
+#         return self.filter(plant__name='TPF', shift='Day')
+#
+#     def tpf_night(self):
+#         return self.filter(plant__name='TPF', shift='Night')
+#
+#     def tpp_day(self):
+#         return self.filter(plant__name='TPP', shift='Day')
+#
+#     def tpp_night(self):
+#         return self.filter(plant__name='TPP', shift='Night')
 
 

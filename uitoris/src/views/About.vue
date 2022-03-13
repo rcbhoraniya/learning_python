@@ -1,9 +1,9 @@
 <template>
   <div>
-    <h1>
+    <h2>
       About
       <hr />
-    </h1>
+    </h2>
   </div>
 </template>
 

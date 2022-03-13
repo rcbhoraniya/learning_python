@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %} Item List {% endblock title %}
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom ">
+    <h1 class="h2">Products </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{% url 'inventory:new-product' %}">
+                <button type="button" class="btn btn-info">Add New Product</button>
+            </a>
+        </div>
+    </div>
+</div>
+
+   {% if page_obj %}
+<table class="table table-hover table-sm mt-5" id="product-table">
+    <thead class="table-light">
+    <tr>
+        <th>Product Name</th>
+        <th>HSN No</th>
+        <th>Unit</th>
+         <th>Purchase Price without GST</th>
+        <th>GST Percentage</th>
+        <th>Profit Margin %</th>
+        <th>Purchase Price with GST</th>
+        <th>Sales Price with GST</th>
+        <th>Record Level</th>
+        <th>Product Stock</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for product in page_obj  %}
+    <tr>
+        <td>{{ product.name }}</td>
+        <td>{{ product.hsn }}</td>
+        <td>{{ product.unit }}</td>
+         <td>{{ product.rate_without_gst }}</td>
+        <td>{{ product.gst_percentage }}</td>
+         <td>{{ product.profit_margin_percentage}}</td>
+        <td>{{ product.purchase_price_with_gst|floatformat:2 }}</td>
+        <td>{{ product.salse_price_with_gst|floatformat:2 }}</td>
+        <td>{{ product.stock.alert_level }}</td>
+        <td>{{ product.stock.quantity }}</td>
+        <td>
+            <a href="{% url 'inventory:edit-product' product.pk %}" class="btn btn-primary btn-sm">Edit</a>
+            <a href="{% url 'inventory:delete-product' product.pk %}" class="btn btn-danger btn-sm"> Delete </a>
+
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+<!--Pagination-->
+<div class="pagination justify-content-center">
+
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+{% else %}
+<div style="color: green; font-style: bold; font-size: 1.5rem; text-align: center;">WOW, SUCH EMPTY</div>
+{% endif %}
+
+<!--<nav aria-label="Page navigation example">-->
+<!--    <ul class="pagination justify-content-center">-->
+<!--        {% if page_obj.has_previous %}-->
+<!--        <li class="page-item">-->
+<!--            <a class="page-link" href="?page=1">First</a>-->
+<!--        </li>-->
+<!--        <li class="page-item">-->
+<!--            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>-->
+<!--        </li>-->
+<!--        {% else %}-->
+<!--        <li class="page-item disabled">-->
+<!--            <a class="page-link" href="#" tabindex="-1" aria-disabled="True">Previous</a>-->
+<!--        </li>-->
+<!--        {% endif %}-->
+
+
+<!--        <li class="page-item active" aria-current="page">-->
+<!--             <span class="page-link"> Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.</span>-->
+
+<!--        </li>-->
+
+<!--        {% if page_obj.has_next %}-->
+<!--        <li class="page-item">-->
+<!--            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>-->
+<!--        </li>-->
+<!--        <li class="page-item">-->
+<!--            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>-->
+<!--        </li>-->
+<!--        {% else %}-->
+<!--        <li class="page-item disabled">-->
+<!--            <a class="page-link" href="#" tabindex="-1" aria-disabled="True">Next</a>-->
+<!--        </li>-->
+<!--        {% endif %}-->
+<!--    </ul>-->
+<!--</nav>-->
+<!--end of Pagination-->
+{% endblock content %}
+
+
+{% block includejs %}
+<script type="text/javascript">
+$('#productDeleteModal').on('show.bs.modal', function (event) {
+	var button = $(event.relatedTarget) // Button that triggered the modal
+	var product_id = button.data('product-id') // Extract info from data-* attributes
+	var product_name = button.data('product-name') // Extract info from data-* attributes
+	// If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+	// Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+	var modal = $(this)
+	modal.find('.modal-body input').val(product_id)
+	console.log(product_name)
+	modal.find('.product-name').html(product_name)
+})
+
+$(document).ready( function () {
+	$('#product-table').DataTable({
+		"order": [],
+		"columnDefs": [ {
+			"targets": 4,
+			"sortable": false,
+			"searchable": false
+		},
+		{
+			"targets": 5,
+			"sortable": false,
+			"searchable": false
+		} ],
+		"paging": true
+	});
+});
+
+</script>
+{% endblock %}
+

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %} {{title}} {% endblock title %}
+{% block content %}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom ">
+    <h1 class="h2">{{title}} </h1>
+
+</div>
+
+
+
+
+<form method="post">
+    {% csrf_token %}
+   
+    <div class="form-group">
+        {{ form.name.errors }}
+        {{ form.name.label_tag }}
+        {{ form.name }}
+    </div>
+    <div class="form-group">
+        {{ form.address.errors }}
+        {{ form.address.label_tag }}
+        {{ form.address }}
+    </div>
+
+    <div class="row">
+        <div class="form-group col-md-5">
+            {{ form.city.errors }}
+            {{ form.city.label_tag }}
+            {{ form.city }}
+        </div>
+        <div class="form-group col-md-5">
+            {{ form.zip.errors }}
+            {{ form.zip.label_tag }}
+            {{ form.zip }}
+        </div>
+    </div>
+    <div class="row">
+
+        <div class="form-group col-md-5">
+            {{ form.phone.errors }}
+            {{ form.phone.label_tag }}
+            {{ form.phone }}
+        </div>
+        <div class="form-group col-md-5">
+            {{ form.email.errors }}
+            {{ form.email.label_tag }}
+            {{ form.email }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col-md-5">
+            {{ form.gstin.errors }}
+            {{ form.gstin.label_tag }}
+            {{ form.gstin }}
+        </div>
+    </div>
+    <div class="mt-2">
+        <button type="submit" class="btn btn-success mr-2 ">{{ savebtn }}</button>
+        {% if title == "New Supplier" %}
+        <button type="reset" class="btn btn-info mr-2 ">Reset</button>
+        {% endif %}
+        {% if delbtn %}
+        <a href="{% url 'inventory:delete-supplier' supplier.pk %}" class="btn btn-danger mr-2"> Delete Supplier </a>
+        {% endif %}
+        <a href="{% url 'inventory:supplier-list' %}" class="btn btn-primary">Cancel</a>
+    </div>
+</form>
+
+{% endblock content %}

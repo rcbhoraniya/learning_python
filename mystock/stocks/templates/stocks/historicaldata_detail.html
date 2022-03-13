@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}HistoricalData Detail{% endblock %}
+{% block content %}
+{% if object %}
+
+<h1>{{ object.company }}</h1>
+<p>Company Name:{{object.company}}</p>
+<p>Date:{{ object.date }}</p>
+<p>Open: {{ object.open }}</p>
+<p>High: {{ object.high }}</p>
+<p>Low: {{ object.low }}</p>
+<p>Close: {{ object.close }}</p>
+<p>Adj. Close: {{ object.adj_close }}</p>
+<p>Volume: {{ object.volume }}</p>
+
+{% else %}
+<p>No stockmap detail are available.</p>
+{% endif %}
+{% endblock %}

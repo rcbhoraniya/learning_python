@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load extra %}
+{% load humanize %}
+{% block title %}StockMap List{% endblock %}
+{% block content %}
+{% if stockmap_list %}
+
+<h4 class="text-center mt-3 alert alert-success ">Stock Map List</h4>
+
+<table id="stockmap-list-table" class="table table-hover table-sm">
+    <thead class="table-light">
+    <tr>
+        <th>#</th>
+        <th>Company Name</th>
+        <th>NSE Symbol</th>
+        <th>Sector</th>
+        <th>Market Cap</th>
+        <th>Money Control Symbol</th>
+        <th>Yahoo Finance Symbol</th>
+        <th>Scrip Code</th>
+        <th>Is Portfolio Stock</th>
+        <th>Holdings</th>
+        <th>Avg. Price</th>
+        <th>Delete</th>
+        <th>Update</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for stock in stockmap_list %}
+    <tr>
+        <th>{{forloop.counter}}</th>
+        <td>{{stock.name}}</td>
+        <td>{{stock.nse_symbol }}</td>
+        <td>{{stock.sector}}</td>
+        <td>{{stock.m_cap}}</td>
+        <td>{{stock.moneycontrol_symbol}}</td>
+        <td>{{stock.yahoo_symbol}}</td>
+        <td>{{stock.scrip_code}}</td>
+        <td>{{stock.is_portfolio_stock}}</td>
+       <td>{{stock.get_holding}}</td>
+        <td>{{stock.get_avg_purchase_price|floatformat:2|intcomma}}</td>
+        <td><a class="btn btn-danger btn-sm" href="{% url 'stocks:stockmap_delete' stock.id %}">Delete</a></td>
+        <td><a class="btn btn-info btn-sm" href="{% url 'stocks:stockmap_update' stock.id %}">Update</a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<p>No stocks are available.</p>
+{% endif %}
+
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
+{% endblock %}
+
+{% block script %}
+$(document).ready(function() {
+$('#stockmap-list-table').DataTable({searching: false, paging: false, info: false});
+} );
+
+{% endblock %}
+
+

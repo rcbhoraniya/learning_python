@@ -1,5 +1,5 @@
 import django_tables2 as tables
-from .models import PlantProduction, Plant, Product, Order, Operator
+from .models import PlantProduction, Plant, Product, Order, Employee
 import itertools
 
 
@@ -37,7 +37,6 @@ class PlantProductionTable(tables.Table):
         attrs = {"class": "table table-bordered table-hover table-sm ",
 
                  }
-
 
     def render_sr(self):
         self.row_sr = getattr(self, 'row_sr',
@@ -98,7 +97,7 @@ class OrderTable(tables.Table):
         return next(self.row_sr)
 
 
-class OperatorTable(tables.Table):
+class EmployeeTable(tables.Table):
     sr = tables.Column(empty_values=(), orderable=False)
     DELETE = """
     <a href="{% url 'toris:operator_delete' record.id  %}"><i
@@ -111,7 +110,7 @@ class OperatorTable(tables.Table):
     Delete = tables.TemplateColumn(DELETE, orderable=False, exclude_from_export=True)
 
     class Meta:
-        model = Operator
+        model = Employee
         template_name = "django_tables2/bootstrap4.html"
         fields = ('sr', 'id', 'name',)
         attrs = {"class": "table table-bordered table-hover table-sm "}

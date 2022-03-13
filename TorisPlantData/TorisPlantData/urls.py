@@ -8,7 +8,8 @@ admin.site.index_title = "Welcome to Toris Plant Portal"
 urlpatterns = [
     path('', include('toris.urls')),
     path('admin/', admin.site.urls),
-
+    path('api/',include('toris.api.urls')),
+    path('api-auth/', include('rest_framework.urls')),
 
 
 ]

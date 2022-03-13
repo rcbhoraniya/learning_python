@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load extra %}
+{% load humanize %}
+{% block title %}Sector List{% endblock %}
+{% block content %}
+{% if sector_list %}
+
+<h4 class="text-center mt-3 alert alert-success ">Sector List</h4>
+
+<table id="sector-list-table" class="table table-hover table-sm">
+    <thead class="table-light">
+    <tr>
+        <th>#</th>
+        <th>Sector Name</th>
+        <th></th>
+        <th></th>
+
+    </tr>
+    </thead>
+    <tbody>
+    {% for stock in sector_list %}
+    <tr>
+        <th>{{forloop.counter}}</th>
+       <td>{{stock.sector}}</td>
+       <td><a class="btn btn-danger btn-sm" href="{% url 'stocks:sector_delete' stock.id %}">Delete</a></td>
+        <td><a class="btn btn-info btn-sm" href="{% url 'stocks:sector_update' stock.id %}">Update</a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<p>No stocks are available.</p>
+{% endif %}
+
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
+{% endblock %}
+
+{% block script %}
+$(document).ready(function() {
+$('#sector-list-table').DataTable({searching: false, paging: false, info: false});
+} );
+
+{% endblock %}
+
+

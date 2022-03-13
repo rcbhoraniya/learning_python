@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %} New Sale {% endblock title %}
+{% block content %}
+<h3 style="color:green; font-style: bold;">New Sale</h3>
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form.visible_fields %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+            </div>
+        {% endfor %}
+        <div class="text-center mt-2">
+            <button type="submit" class="btn btn-success">Next</button>
+            <a href="{% url 'sales-list' %}" class="btn btn-info">Cancel</a>
+        </div>
+    </form>
+{% endblock content %}

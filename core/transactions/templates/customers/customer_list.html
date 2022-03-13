@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block title %} Customers List {% endblock title %}
+{% block content %}
+<h3 style="color:green; font-style: bold;">Customers List</h3>
+<div class="float-end mb-3">
+    <a class="btn btn-info" href="{% url 'new-customer' %}">Add New Customer</a></div>
+<table class="table table-hover table-sm mt-5">
+    <thead class="table-light">
+    <tr>
+        <th>Name</th>
+        <th>Address</th>
+        <th>State</th>
+        <th>District</th>
+        <th>City</th>
+        <th>Pin Code</th>
+        <th>Phone No</th>
+        <th>Email</th>
+        <th>GSTIN No</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    {% if object_list %}
+    <tbody>
+    {% for customer in object_list %}
+    <tr>
+        <td>
+            <a href="">{{ customer.name }}</a>
+        </td>
+        <td> {{ customer.address }}</td>
+        <td> {{ customer.state }}</td>
+        <td> {{ customer.district }}</td>
+        <td> {{ customer.city }}</td>
+        <td> {{ customer.zip }}</td>
+        <td> {{ customer.phone }}</td>
+        <td> {{ customer.email }}</td>
+        <td> {{ customer.gstin }}</td>
+        <td>
+            <div class="align-middle">
+                <a href="{% url 'edit-customer' customer.pk %}" class="btn btn-primary btn-sm">Edit Details</a>
+                <a href="{% url 'delete-customer' customer.pk %}" class="btn btn-danger btn-sm">Delete Customer</a>
+            </div>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div style="color: green; font-style: bold; font-size: 1.5rem; text-align: center;">WOW, SUCH EMPTY</div>
+{% endif %}
+
+
+{% endblock content %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %} Delete Sale {% endblock title %}
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom ">
+    <h1 class="h2">Delete Sale Bill </h1>
+
+</div>
+
+    <form method="post">
+        {% csrf_token %}
+            <h5>Are you sure you want to delete customer: "{{object.customer.name}}"  Sale Bill No: "{{ object.invoice_number }}" ?</h5>
+        <div class="form-group">
+            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+            <a href="{% url 'inventory:sales-bill-list' %}" class="btn btn-info">Cancel</a>
+        </div>
+    </form>
+{% endblock content %}

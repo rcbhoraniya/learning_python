@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load extra %}
+{% load humanize %}
+{% block title %}StockMap List{% endblock %}
+{% block content %}
+{% if stockdata_list %}
+
+<h4 class="text-center mt-3 alert alert-success ">StockData List</h4>
+
+<table id="stockdata-list-table" class="table table-hover table-sm">
+    <thead class="table-light">
+    <tr>
+        <th>#</th>
+        <th>Company Name</th>
+        <th>Date</th>
+        <th>Side</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Total Price</th>
+        <th>Trade Number</th>
+        <th></th>
+        <th></th>
+
+    </tr>
+    </thead>
+    <tbody>
+    {% for stock in stockdata_list %}
+    <tr>
+        <th>{{forloop.counter}}</th>
+        <td>{{stock.company}}</td>
+        <td>{{stock.date|date:'d-m-Y H:i:s' }}</td>
+        <td>{{stock.side}}</td>
+        <td>{{stock.quantity}}</td>
+        <td>{{stock.price}}</td>
+        <td>{{stock.get_total_price}}</td>
+        <td>{{stock.trade_num}}</td>
+
+        <td><a class="btn btn-danger btn-sm" href="{% url 'stocks:stockdata_delete' stock.id %}">Delete</a></td>
+        <td><a class="btn btn-info btn-sm" href="{% url 'stocks:stockdata_update' stock.id %}">Update</a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<p>No stocks are available.</p>
+{% endif %}
+
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
+{% endblock %}
+
+{% block script %}
+$(document).ready(function() {
+$('#stockdata-list-table').DataTable({searching: false, paging: false, info: false});
+} );
+
+{% endblock %}
+
+

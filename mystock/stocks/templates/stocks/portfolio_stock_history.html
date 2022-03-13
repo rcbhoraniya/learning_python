@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+{% block title %}Historical data{% endblock %}
+
+
+{% block js %}
+<!--<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>-->
+    <script src="{% static 'stocks/chartjs/dist/chart.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+{% if stock_hist %}
+
+<h3 class="text-center">Historical Data of {{stock_hist.0.company}}</h3>
+<!--<a class="btn btn-primary mt-2 mb-2" href="{% url 'stocks:index' %}">Home</a>-->
+<h5>52 Week High: {{stock_hist.0.year_high}}, Date:{{stock_hist.0.year_high_date|date:'d-m-Y'}}</h5>
+<h5>52 Week Low: {{stock_hist.0.year_low}}, Date:{{stock_hist.0.year_low_date|date:'d-m-Y'}} </h5>
+
+<canvas class="my-4 chartjs-render-monitor" id="myChart" width="355" height="149" style="display: block; width: 355px; height: 149px;"></canvas>
+<!--<canvas id="myChart" width="1200" height="600"></canvas>-->
+
+
+<table class="table table-hover">
+    <thead class="table-light">
+    <tr>
+        <th>#</th>
+        <th>Date</th>
+        <th>Company Name</th>
+        <th>Open</th>
+        <th>High</th>
+        <th>Low</th>
+        <th>Close</th>
+        <th>Adj.Close</th>
+        <th>Volume</th>
+        <th>SMA_200</th>
+        <th>SMA_100</th>
+        <th>SMA_50</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for stock in stock_hist %}
+    <tr>
+        <th>{{forloop.counter}}</th>
+        <td>{{stock.date|date:'d-m-Y H:i:s'}}</td>
+        <td>{{stock.company.company_name}}</td>
+        <td>{{stock.open|floatformat:2|intcomma}}</td>
+        <td>{{stock.high|floatformat:2|intcomma}}</td>
+        <td>{{stock.low|floatformat:2|intcomma}}</td>
+        <td>{{stock.close|floatformat:2|intcomma}}</td>
+        <td>{{stock.adj_close|floatformat:2|intcomma}}</td>
+        <td>{{stock.volume|intcomma}}</td>
+        <td>{{stock.avg_200|floatformat:2|intcomma}}</td>
+        <td>{{stock.avg_100|floatformat:2|intcomma}}</td>
+        <td>{{stock.avg_50|floatformat:2|intcomma}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No stocks are available.</p>
+{% endif %}
+
+{% endblock %}
+
+
+{% block script %}
+
+    const labels = [{%for data in stock_hist%}'{{data.date|date:'d-m-Y'}}',{%endfor%}];
+const data = {
+  labels,
+  datasets: [
+    {
+      label: 'Close Price',
+      data: [{%for data in stock_hist%}{{data.close}},{%endfor%}],
+      borderColor: 'Blue',
+      borderWidth: 1,
+      tension: 0.1,
+      pointStyle:'star',
+      fill:true,
+      yAxisID: 'y',
+    },
+{
+      type: 'bar',
+      label: 'Volume',
+      data: [{%for data in stock_hist%}{{data.volume}},{%endfor%}],
+      borderColor: 'red',
+      borderWidth: 1,
+      tension: 0.1,
+      pointStyle:'star',
+      yAxisID: 'y1',
+    },
+{
+      label: 'year_high',
+      data: [{%for data in stock_hist%}{{data.year_high}},{%endfor%}],
+      borderColor: 'red',
+      borderWidth: 1,
+      tension: 0.1,
+      pointStyle:'star',
+      yAxisID: 'y',
+    },
+{
+      label: 'year_low',
+      data: [{%for data in stock_hist%}{{data.year_low}},{%endfor%}],
+      borderColor: 'green',
+      borderWidth: 1,
+      tension: 0.1,
+      pointStyle:'star',
+      yAxisID: 'y',
+    },
+{
+      label: 'first_level',
+      data: [{%for data in stock_hist%}{{data.first_level}},{%endfor%}],
+      borderColor: 'violet',
+      borderWidth: 1,
+      tension: 0.1,
+      pointStyle:'star',
+      yAxisID: 'y',
+    },
+{
+      label: 'second_level',
+      data: [{%for data in stock_hist%}{{data.second_level}},{%endfor%}],
+      borderColor: 'green',
+      borderWidth: 1,
+      tension: 0.1,
+      pointStyle:'star',
+      yAxisID: 'y',
+    },
+{
+      label: 'third_level',
+      data: [{%for data in stock_hist%}{{data.third_level}},{%endfor%}],
+      borderColor: 'blue',
+      borderWidth: 1,
+      tension: 0.1,
+      pointStyle:'star',
+      yAxisID: 'y',
+    },
+{
+      label: 'fourth_level',
+      data: [{%for data in stock_hist%}{{data.fourth_level}},{%endfor%}],
+      borderColor: 'yellow',
+      borderWidth: 1,
+      tension: 0.1,
+      pointStyle:'star',
+      yAxisID: 'y',
+    }
+  ],
+};
+
+const config = {
+  type: 'line',
+  data:data,
+  options: {
+    radius:2,
+    hitRedius:30,
+    hoverRedius:60,
+    tension:0.3,
+    responsive: true,
+    scales: {
+        y: {
+            beginAt: {{stock_hist.0.year_low}}
+            },
+        },
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: '{{stock_hist.0.company}}',
+      }
+    }
+  },
+};
+const ctx = document.getElementById('myChart');
+
+const myChart = new Chart(ctx, config);
+
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+<!--const ctx = document.getElementById('myChart');-->
+<!--const myChart = new Chart(ctx, {-->
+<!--    type: 'line',-->
+<!--    data: {-->
+<!--        labels: [{%for data in stock_hist%}'{{data.date|date:'d-m-Y'}}',{%endfor%}],-->
+<!--        datasets: [{-->
+<!--            label: '# Close Price',-->
+<!--            data: [{%for data in stock_hist%}{{data.close}},{%endfor%}],-->
+<!--              fill: false,-->
+<!--    borderColor: 'rgb(0,0,255)',-->
+<!--    tension: 0.1,-->
+<!--    pointStyle:'star',-->
+<!--    borderWidth: 1-->
+<!--        }]-->
+<!--    },-->
+<!--    options: {-->
+<!--        scales: {-->
+<!--            y: {-->
+<!--                beginAt: {{maxmindata.ylow}}-->
+<!--            }-->
+<!--        }-->
+<!--    }-->
+<!--});-->
+

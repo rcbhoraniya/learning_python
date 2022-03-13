@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Sector wise detail{% endblock %}
+
+{% block content %}
+
+{% if stock_sector %}
+<h3 class="text-center">Sector Data</h3>
+<!--<a class="btn btn-primary mt-2 mb-2" href="{% url 'stocks:index' %}">Home</a>-->
+
+<table id="sector" class="table table-hover">
+    <thead class="table-light">
+    <tr>
+        <th>#</th>
+        <th>Sector</th>
+        <th>Investment Rs.</th>
+        <th>Sector Weight %</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for data in stock_sector %}
+    <tr>
+        <th>{{forloop.counter}}</th>
+        <td><a href="{% url 'stocks:sector_stock' data.sector %}" >{{data.sector}}</a> </td>
+        <td>{{data.sector_sum|floatformat:2|intcomma}}</td>
+        <td>{{data.weight|floatformat:2}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+
+{% else %}
+<p>No stocks are available.</p>
+{% endif %}
+{% endblock %}
+
+{% block script %}
+$(document).ready(function() {
+$('#sector').dataTable({searching: false, paging: false, info: false});
+<!--$('#market-cap').dataTable({searching: false, paging: false, info: false});-->
+} );
+
+
+{% endblock %}

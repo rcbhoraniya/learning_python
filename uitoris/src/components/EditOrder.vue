@@ -1,9 +1,11 @@
 <template>
   <div>
-    <b-button variant="outline-info" size="sm" to="/order">Back</b-button>
-    <h4 class="text-center">{{ formname }}{{ form.id }}</h4>
+    <router-link to="/order"
+      ><b-button variant="outline-primary" size="sm">Back</b-button></router-link
+    >
     <b-container>
-      <b-card>
+      <b-card class="bg-form col-12">
+        <h2 class="text-center">{{ formname }}{{ form.id }}</h2>
         <b-form @submit.prevent="onSubmitForm" v-if="!showform">
           <b-row>
             <b-col>
@@ -16,50 +18,56 @@
                 ></b-form-datepicker>
               </b-form-group> </b-col
             ><b-col>
-              <b-form-group label="customer_name:" label-for="customer_name">
+              <b-form-group label="Customer name:" label-for="customer_name">
                 <b-form-input
                   id="customer_name"
                   v-model="form.customer_name"
-                  placeholder="Enter  customer_name"
+                  placeholder="Enter  customer name"
                   class="mb-2"
                   required
                 ></b-form-input>
               </b-form-group> </b-col
             ><b-col>
-              <b-form-group label="order_qty:" label-for="order_qty">
+              <b-form-group label="Order qty:" label-for="order_qty">
                 <b-form-input
                   id="order_qty"
                   v-model="form.order_qty"
-                  placeholder="Enter order_qty "
+                  placeholder="Enter order qty "
                   class="mb-2"
                   required
                 ></b-form-input> </b-form-group
             ></b-col> </b-row
           ><b-row
             ><b-col>
-              <b-form-group label="pi_number:" label-for="pi_number">
+              <b-form-group label="PI number:" label-for="pi_number">
                 <b-form-input
                   id="pi_number"
                   v-model="form.pi_number"
                   class="mb-2"
-                  placeholder="Enter pi_number "
+                  placeholder="Enter pi number "
                   required
                 ></b-form-input>
               </b-form-group> </b-col
             ><b-col>
-              <b-form-group label="product_code:" label-for="product_code">
-                <b-form-input
-                  id="product_code"
-                  v-model="form.product_code"
-                  class="mb-2"
-                  placeholder="Enter product_code"
-                  required
-                ></b-form-input>
+              <b-form-group label="Product Code:" label-for="product_code" description="">
+                <b-form-select id="product_code" v-model="form.product_code" class="mb-3">
+                  <b-form-select-option
+                    v-for="product in products"
+                    :key="product.id"
+                    v-bind:value="product.id"
+                  >
+                    {{ product.product_code }}-{{ product.color_marking_on_bobin }}-{{
+                      product.tape_color
+                    }}-{{ product.denier }}
+                  </b-form-select-option>
+                </b-form-select>
               </b-form-group> </b-col
             ><b-col> </b-col
           ></b-row>
 
-          <b-button type="submit" variant="primary" class="mr-2">Submit</b-button>
+          <div class="text-center">
+            <b-button type="submit" variant="primary">Submit</b-button>
+          </div>
         </b-form>
 
         <div v-else>
@@ -79,43 +87,29 @@ import { mapActions, mapState } from "vuex";
 export default {
   data() {
     return {
-      options: [
-        { value: "Day", text: "DAY" },
-        { value: "Night", text: "NIGHT" },
-      ],
       formname: "Edit Order Form#",
       showform: false,
       order: null,
     };
   },
   computed: {
-    // ...mapGetters("product", { getProductbyPlant: "getProductByPlant" }),
-    // ...mapState({ plants: (state) => state.plant.plantall }),
-    // ...mapState({ products: (state) => state.product.productall }),
-    // ...mapState({ operators: (state) => state.operator.operatorall }),
+    ...mapState({ products: (state) => state.product.productall }),
     ...mapState({ form: (state) => state.order.order }),
   },
   mounted() {
-    // this.getPlants();
+    this.getProducts();
     this.getOrderById(this.$route.params.id);
-    // this.getOperators();
-    // this.getProductions();
   },
   methods: {
-    // ...mapActions("plant", ["getPlants"]),
+    ...mapActions("product", ["getProducts"]),
     ...mapActions("order", ["getOrderById", "editOrder"]),
-    // ...mapActions("operator", ["getOperators"]),
-    // ...mapActions("production", ["addProduction", "getProductions"]),
-
     onSubmitForm() {
-      //   event.preventDefault();
-      // alert(JSON.stringify(this.form));
       var data = this.form;
       this.editOrder(data);
       this.showform = true;
-      this.data = {};
       this.$router.push("/order");
     },
   },
 };
 </script>
+<style lang="css" scoped></style>

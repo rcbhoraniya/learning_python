@@ -1,0 +1,51 @@
+@use "sass:list";
+@use "sass:math";
+// $indigo:#6610f2;
+$purple:#0f018a;
+// $orange:#fd7e14;
+// $yellow:#ffc107;
+// $pink:#e83e8c;
+$red:#f14a17;
+// $green:#2da44e;
+// $blue:#114c8a;
+// $teal:#20c997;
+// $cyan:#17a2b8;
+// $bodyColor:rgb(68, 51, 177);
+// $bodybg:rgb(255, 255, 255);
+// $body-bg: $bodybg;
+$theme-colors: ( "primary":$purple, "danger":$red, );
+$font-family-sans-serif: "Roboto",
+"Raleway",
+"Helvetica Neue",
+Arial,
+sans-serif;
+// $font-size:0.9rem;
+// $color:#5c3434;
+$bgFormColor:#f8f9fa;
+@import 'node_modules/bootstrap/scss/bootstrap.scss';
+@import 'node_modules/bootstrap-vue/src/index.scss';
+// html {
+//     font-size: $font-size;
+// }
+body {
+    min-height: 70rem;
+    padding-top: 5rem;
+    // font-size: $font-size;
+    // font: 1rem/1.5 var(--font-family-sans-serif);
+    // color: var(--purple);
+    // color: $color;
+}
+
+a {
+    color: var(--gray-dark);
+}
+
+.table {
+    font-size: 15px;
+    font-family: var(--font-family-sans-serif);
+    color: var(--dark);
+}
+
+.bg-form {
+    background-color: $bgFormColor;
+}

@@ -1,6 +1,9 @@
 <template>
   <div>
-    <b-button variant="outline-info" size="sm" to="/product/add">Add Product</b-button>
+    <router-link to="/product/add"
+      ><b-button variant="outline-primary" size="sm">Add Product</b-button></router-link
+    >
+
     <b-button size="sm" class="float-right" @click="csvExport(csvData)">
       Export to CSV
     </b-button>
@@ -51,8 +54,10 @@
             >
               <template #first>
                 <option value="">-- none --</option>
-              </template>
-            </b-form-select></b-input-group
+              </template> </b-form-select
+            ><b-input-group-append>
+              <b-button :disabled="!filterOn" @click="filterOn = ''">Clear</b-button>
+            </b-input-group-append></b-input-group
           ></b-form-group
         >
       </b-col>
@@ -84,7 +89,7 @@
         <b-button variant="danger" class="mr-2" size="sm" @click="showModal(row.item.id)"
           ><i class="far fa-trash-alt text-light"></i
         ></b-button>
-        <b-button variant="info" size="sm" @click="row.toggleDetails">{{
+        <b-button variant="primary" size="sm" @click="row.toggleDetails">{{
           row.detailsShowing ? "Hide" : "Show"
         }}</b-button>
       </template>
@@ -96,7 +101,7 @@
             </b-col>
             <b-col>{{ value }}</b-col>
           </b-row>
-          <b-button variant="info" size="sm" @click="row.toggleDetails"
+          <b-button variant="primary" size="sm" @click="row.toggleDetails"
             >Hide Details</b-button
           >
         </b-card>
@@ -143,14 +148,18 @@
         </b-form-group>
       </b-col>
 
-      <b-col sm="7" md="4" class="my-1">
+      <b-col>
         <b-pagination
           v-model="currentPage"
           :total-rows="totalRows"
           :per-page="perPage"
-          align="fill"
+          align="right"
           size="sm"
           class="my-0"
+          first-text="First"
+          prev-text="Prev"
+          next-text="Next"
+          last-text="Last"
         ></b-pagination>
       </b-col>
     </b-row>
@@ -292,6 +301,7 @@ export default {
       filter: null,
       filterOn: [],
       infoModalshow: false,
+      infoModaltitle: "",
     };
   },
   mounted() {
@@ -323,8 +333,8 @@ export default {
       this.deleteProduct(this.ID);
       this.hideModal();
     },
-    EditProduct(id) {
-      this.$router.push("/product/" + id);
+    EditProduct(Id) {
+      this.$router.push({ name: "EditProduct", params: { id: Id } });
     },
     showModal(id) {
       this.infoModaltitle = `Item#${id}`;

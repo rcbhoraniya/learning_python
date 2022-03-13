@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block title %} Inventory List {% endblock title %}
+{% block content %}
+
+<h3 style="color:green; font-style: bold;">Inventory List</h3>
+<form method="get">
+    <div class="input-group search">
+        {% render_field filter.form.name class="form-control textinput" placeholder="Search by stock name" %}
+        <div class="input-group-append">
+            <button type="submit" class="btn btn-primary"> Search</button>
+        </div>
+    </div>
+</form>
+<table class="table table-hover table-sm mt-5">
+    <thead class="table-light">
+    <tr>
+        <th>Stock Name</th>
+        <th>Current Stock in Inventory</th>
+        <th>Options</th>
+    </tr>
+    </thead>
+
+    {% if object_list %}
+
+    <tbody>
+    {% for stock in object_list %}
+    <tr>
+        <td>{{ stock.name }}</td>
+        <td>{{ stock.quantity }}</td>
+        <td>
+            <a href="{% url 'edit-stock' stock.pk %}" class="btn btn-primary btn-sm">Edit Details</a>
+            <a href="{% url 'delete-stock' stock.pk %}" class="btn btn-danger btn-sm"> Delete Stock </a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+    <div style="color: green; font-style: bold; font-size: 1.5rem; text-align: center;">WOW, SUCH EMPTY</div>
+{% endif %}
+{% endblock content %}

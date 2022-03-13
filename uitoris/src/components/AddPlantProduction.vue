@@ -1,9 +1,13 @@
 <template>
   <div>
-    <b-button variant="outline-info" size="sm" to="/production">Back</b-button>
-    <h4 class="text-center">{{ formname }}{{ form.id }}</h4>
+    <router-link to="/production"
+      ><b-button variant="outline-primary" size="sm" @click="clearstate"
+        >Back</b-button
+      ></router-link
+    >
     <b-container>
-      <b-card>
+      <b-card class="bg-form col-12">
+        <h3 class="text-center">{{ formname }}{{ form.id }}</h3>
         <b-form @submit.prevent="onSubmitForm" v-if="!showform">
           <b-row>
             <b-col>
@@ -14,8 +18,8 @@
                   class="mb-2"
                   required
                 ></b-form-datepicker>
-              </b-form-group>
-
+              </b-form-group> </b-col
+            ><b-col>
               <b-form-group label="Plant:" label-for="plant" description="">
                 <b-form-select
                   id="plant"
@@ -25,8 +29,8 @@
                   text-field="name"
                   @change="lastItem(form.plant)"
                 ></b-form-select>
-              </b-form-group>
-
+              </b-form-group> </b-col
+            ><b-col>
               <b-form-group label="Product Code:" label-for="product_code" description="">
                 <b-form-select id="product_code" v-model="form.product_code" class="mb-3">
                   <b-form-select-option
@@ -39,7 +43,10 @@
                     }}-{{ product.denier }}
                   </b-form-select-option>
                 </b-form-select>
-              </b-form-group> </b-col
+              </b-form-group>
+            </b-col></b-row
+          >
+          <b-row
             ><b-col>
               <b-form-group label="Shift:" label-for="shift" description="">
                 <b-form-select
@@ -50,8 +57,8 @@
                   text-field="text"
                   disabled-field="notEnabled"
                 ></b-form-select>
-              </b-form-group>
-
+              </b-form-group> </b-col
+            ><b-col>
               <b-form-group
                 label="Operator name:"
                 label-for="operator_name"
@@ -59,12 +66,12 @@
               >
                 <b-form-select
                   v-model="form.operator_name"
-                  :options="operators"
+                  :options="employeeOperator"
                   value-field="id"
                   text-field="name"
                 ></b-form-select>
-              </b-form-group>
-
+              </b-form-group> </b-col
+            ><b-col>
               <b-form-group
                 label="No of winderman:"
                 label-for="no_of_winderman"
@@ -78,6 +85,8 @@
                   required
                 ></b-form-input>
               </b-form-group> </b-col
+          ></b-row>
+          <b-row
             ><b-col>
               <b-form-group label="end_reading:" label-for="end_reading" description="">
                 <b-form-input
@@ -87,8 +96,8 @@
                   placeholder="Enter end_reading "
                   required
                 ></b-form-input>
-              </b-form-group>
-
+              </b-form-group> </b-col
+            ><b-col>
               <b-form-group
                 label="start_reading:"
                 label-for="start_reading"
@@ -101,8 +110,8 @@
                   placeholder="Enter start_reading "
                   required
                 ></b-form-input>
-              </b-form-group>
-
+              </b-form-group> </b-col
+            ><b-col>
               <b-form-group label="wastage:" label-for="wastage" description="">
                 <b-form-input
                   id="wastage"
@@ -113,7 +122,9 @@
                 ></b-form-input>
               </b-form-group> </b-col
           ></b-row>
-          <b-button type="submit" variant="primary" class="mr-2">Submit</b-button>
+          <div class="text-center">
+            <b-button type="submit" variant="primary">Submit</b-button>
+          </div>
         </b-form>
 
         <div v-else>
@@ -121,31 +132,32 @@
           <button class="btn btn-success" @click="newPlantProduction">Add</button>
         </div>
       </b-card>
-      <!-- <b-card class="mt-3" header="Form Data Result">
-      <pre class="m-0">{{ form }}</pre>
-    </b-card> -->
+
+      <b-card class="mt-3" header="Form Data Result">
+        <pre class="m-0">{{ form }}</pre>
+      </b-card>
     </b-container>
   </div>
 </template>
 
 <script>
 import { mapActions, mapState, mapGetters } from "vuex";
-
+// import { Production } from "@/models";
 export default {
   data() {
     return {
       form: {
-        // id: null,
-        date: "",
         plant: "",
-        product_code: "",
+        date: "",
         shift: "",
         operator_name: "",
-        wastage: "",
+        no_of_winderman: "",
+        product_code: "",
         end_reading: "",
         start_reading: "",
-        no_of_winderman: "",
+        wastage: "",
       },
+
       options: [
         { value: "Day", text: "DAY" },
         { value: "Night", text: "NIGHT" },
@@ -155,64 +167,77 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("production", { getProductionbyPlant: "getProductionByPlant" }),
+    ...mapGetters("production", { getstartreading: "getStartreading" }),
+    ...mapGetters("employee", { employeeOperator: "employeeOperator" }),
     ...mapState({ plants: (state) => state.plant.plantall }),
     ...mapState({ products: (state) => state.product.productall }),
-    ...mapState({ operators: (state) => state.operator.operatorall }),
-    ...mapState({ items: (state) => state.production.productionall }),
+    ...mapState({ startreadingitem: (state) => state.production.startreadingItem }),
   },
   mounted() {
     this.getPlants();
     this.getProducts();
-    this.getOperators();
-    this.getProductions();
+    this.getEmployees();
+  },
+  watch: {
+    getstartreading: {
+      handler() {
+        this.form.start_reading = this.getstartreading;
+      },
+      immediate: true,
+    },
   },
   methods: {
     ...mapActions("plant", ["getPlants"]),
     ...mapActions("product", ["getProducts"]),
-    ...mapActions("operator", ["getOperators"]),
-    ...mapActions("production", ["addProduction", "getProductions"]),
-
+    ...mapActions("employee", ["getEmployees"]),
+    ...mapActions("production", [
+      "addProduction",
+      "getProductions",
+      "getStartReading",
+      "clearStartReading",
+    ]),
     lastItem(plant) {
-      let lastitem = this.getProductionbyPlant({ plant });
-      this.form.start_reading = lastitem.end_reading;
+      this.getStartReading(plant);
+      let start = this.getstartreading;
+      this.form.start_reading = start;
     },
     onSubmitForm() {
-      // event.preventDefault();
-      // alert(JSON.stringify(this.form));
-      var data = {
-        date: this.form.date,
+      let data = {
         plant: this.form.plant,
-        product_code: this.form.product_code,
+        date: this.form.date,
         shift: this.form.shift,
         operator_name: this.form.operator_name,
-        wastage: this.form.wastage,
+        no_of_winderman: this.form.no_of_winderman,
+        product_code: this.form.product_code,
         end_reading: this.form.end_reading,
         start_reading: this.form.start_reading,
-        no_of_winderman: this.form.no_of_winderman,
+        wastage: this.form.wastage,
       };
+
+      console.log("data", data);
       this.addProduction(data);
       this.showform = true;
+      this.clearStartReading();
     },
     newPlantProduction() {
       this.showform = false;
+      this.clearStartReading();
       this.form = {
-        // id: null,
-        date: "",
         plant: "",
-        product_code: "",
+        date: "",
         shift: "",
         operator_name: "",
-        wastage: "",
+        no_of_winderman: "",
+        product_code: "",
         end_reading: "",
         start_reading: "",
-        no_of_winderman: "",
+        wastage: "",
       };
-      // this.$router.go();
     },
-    // Reset() {
-    //   this.form = {};
-    // },
+    clearstate() {
+      this.$store.dispatch("production/clearStateStartReading");
+    },
   },
 };
 </script>
+<style lang="css" scoped></style>

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}StockMap Detail{% endblock %}
+{% block content %}
+{% if object %}
+
+<h1>{{ object.name }}</h1>
+<p>Company Name:{{ object.name }}</p>
+<p>NSE Symbol:{{ object.nse_symbol }}</p>
+<p>Market Cap: {{ object.m_cap }}</p>
+<p>Sector: {{ object.sector }}</p>
+<p>Moneycontrol Symbol: {{ object.moneycontrol_symbol }}</p>
+<p>Yahoo Symbol: {{ object.yahoo_symbol }}</p>
+<p>Scrip Code: {{ object.scrip_code }}</p>
+<p>Is Portfolio Stock: {{ object.is_portfolio_stock }}</p>
+{% else %}
+<p>No stockmap detail are available.</p>
+{% endif %}
+{% endblock %}

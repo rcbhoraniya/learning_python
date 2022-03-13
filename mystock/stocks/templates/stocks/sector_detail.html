@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Sector Detail{% endblock %}
+{% block content %}
+{% if object %}
+
+<h1>{{ object.sector }}</h1>
+<p>Company Name:{{ object.sector }}</p>
+
+
+{% else %}
+<p>No stockmap detail are available.</p>
+{% endif %}
+{% endblock %}

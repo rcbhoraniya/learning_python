@@ -1,12 +1,14 @@
 <template>
-  <ProductionTable />
+  <production-table />
 </template>
 
 <script>
 import ProductionTable from "../components/table/ProductionTable";
 export default {
+  name: "Production",
+  title: "Production",
   components: {
-    ProductionTable,
+    "production-table": ProductionTable,
   },
   data() {
     return {};

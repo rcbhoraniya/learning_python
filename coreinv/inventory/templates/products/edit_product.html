@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %} {{title}} {% endblock title %}
+{% block content %}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom ">
+    <h1 class="h2">{{title}} </h1>
+</div>
+
+<form method="post">
+
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                {{ form.name.errors }}
+                <label for="{{ form.name.id_for_label }}" class="form-label">Name:</label>
+                {{ form.name }}
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group ">
+                {{ form.hsn.errors }}
+                <label for="{{ form.hsn.id_for_label }}" class="form-label">HSN:</label>
+                {{ form.hsn }}
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group ">
+                {{ form.unit.errors }}
+                <label for="{{ form.unit.id_for_label }}" class="form-label">Unit:</label>
+                {{ form.unit }}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-group ">
+                {{ form.unit.errors }}
+                <label for="{{ form.rate_without_gst.id_for_label }}" class="form-label">Rate Without GST:</label>
+                {{ form.rate_without_gst }}
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group ">
+                {{ form.unit.errors }}
+                <label for="{{ form.profit_margin_percentage.id_for_label }}" class="form-label">Profit Margin
+                    %:</label>
+                {{ form.profit_margin_percentage }}
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="form-group ">
+                {{ form.gst_percentage.errors }}
+                <label for="{{ form.gst_percentage.id_for_label }}" class="form-label">GST Percentage:</label>
+                {{ form.gst_percentage }}
+            </div>
+        </div>
+    </div>
+    <div class="text-left mt-5">
+        <button type="submit" class="btn btn-success">{{ savebtn }}</button>
+        {% if title == "New Product" %}
+        <button type="reset" class="btn btn-info">Reset</button>
+        {% endif %}
+        {% if delbtn %}
+        <a href="{% url 'inventory:delete-product' object.pk %}" class="btn btn-danger"> Delete Product </a>
+        {% endif %}
+        <a href="{% url 'inventory:product-list' %}" class="btn btn-primary">Cancel</a>
+    </div>
+
+</form>
+
+{% endblock content %}

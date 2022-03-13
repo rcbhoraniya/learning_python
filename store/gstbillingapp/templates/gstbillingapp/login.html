@@ -1,0 +1,33 @@
+{% extends "gstbillingapp/base.html" %}
+
+{% load static %}
+
+
+{% block content %}
+<div class="row justify-content-center align-items-center ">
+    <div class="col-sm-3  ">
+        <h5 class="text-center alert alert-info mt-2">Login</h5>
+        <form method="POST">
+            {% csrf_token %}
+            <table class="table">
+                <tbody >
+                <tr>
+                    <th scope="row" class="text-right">Username:</th>
+                    <td class="form-input-td">{{auth_form.username}}</td>
+                </tr>
+                <tr>
+                    <th scope="row" class="text-right">Password:</th>
+                    <td class="form-input-td">{{auth_form.password}}</td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="text-center">
+                <input type="submit" class="btn btn-primary float-right" value="Submit">
+            </div>
+        </form>
+        <div class="text-center mt-5">
+            <a href="{% url 'signup_view' %}" class="text-center">Sign Up</a></div>
+    </div>
+</div>
+
+{% endblock %}

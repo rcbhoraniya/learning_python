@@ -1,1 +1,0 @@
-const product = {template:'<h1>this is product</h1>'}

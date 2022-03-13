@@ -1,6 +1,8 @@
 <template>
   <div>
-    <b-button variant="outline-info" size="sm" to="/order/add">Add Order</b-button>
+    <router-link to="/order/add"
+      ><b-button variant="outline-primary" size="sm">Add Order</b-button></router-link
+    >
     <b-button size="sm" class="float-right" @click="csvExport(csvData)">
       Export to CSV
     </b-button>
@@ -51,8 +53,10 @@
             >
               <template #first>
                 <option value="">-- none --</option>
-              </template>
-            </b-form-select></b-input-group
+              </template> </b-form-select
+            ><b-input-group-append>
+              <b-button :disabled="!filterOn" @click="filterOn = ''">Clear</b-button>
+            </b-input-group-append></b-input-group
           ></b-form-group
         >
       </b-col>
@@ -81,7 +85,7 @@
         <b-button variant="danger" class="mr-2" size="sm" @click="showModal(row.item.id)"
           ><i class="far fa-trash-alt text-light"></i
         ></b-button>
-        <b-button variant="info" size="sm" @click="row.toggleDetails">{{
+        <b-button variant="primary" size="sm" @click="row.toggleDetails">{{
           row.detailsShowing ? "Hide" : "Show"
         }}</b-button>
       </template>
@@ -93,7 +97,7 @@
             </b-col>
             <b-col>{{ value }}</b-col>
           </b-row>
-          <b-button variant="info" size="sm" @click="row.toggleDetails"
+          <b-button variant="primary" size="sm" @click="row.toggleDetails"
             >Hide Details</b-button
           >
         </b-card>
@@ -138,14 +142,18 @@
         </b-form-group>
       </b-col>
 
-      <b-col sm="7" md="4" class="my-1">
+      <b-col>
         <b-pagination
           v-model="currentPage"
           :total-rows="totalRows"
           :per-page="perPage"
-          align="fill"
+          align="right"
           size="sm"
           class="my-0"
+          first-text="First"
+          prev-text="Prev"
+          next-text="Next"
+          last-text="Last"
         ></b-pagination>
       </b-col>
     </b-row>
@@ -176,7 +184,7 @@ export default {
           thClass: "my-class1",
         },
         {
-          key: "customer_name",
+          key: "customer_name.name",
           label: "customer_name",
           sortable: true,
           sortDirection: "desc",
@@ -214,6 +222,7 @@ export default {
       filter: null,
       filterOn: [],
       ID: null,
+      infoModaltitle: "",
     };
   },
   mounted() {

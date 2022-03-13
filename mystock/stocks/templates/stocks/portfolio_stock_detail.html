@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+{% load extra %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}StockDetails{% endblock %}
+{% block js %}
+<!--<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>-->
+    <script src="{% static 'stocks/chartjs/dist/chart.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+{% if stock_list %}
+<h5 class="text-center">Portfolio stock detail of {{stock_list.0.company__name|title}}</h5>
+<div class="row ">
+    <div class="col">
+        <table class="table table-hover">
+            <thead class="table-light">
+            <tr>
+                <th>Item</th>
+                <th>Data</th>
+                </th></tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><strong>Company</strong></td>
+                <td>{{stock_list.0.company__name|title}}</td>
+            </tr>
+            <tr>
+                <td><strong>Holding</strong></td>
+                <td>{{stock_list.0.qty_sum}}</td>
+            </tr>
+            <tr>
+                <td><strong>Total Price</strong></td>
+                <td>{{stock_list.0.price_sum|floatformat:2|intcomma}}</td>
+            </tr>
+            <tr>
+                <td><strong>Average Price</strong></td>
+                <td>{{ stock_list.0.average_price|floatformat:2}}</td>
+            </tr>
+            <tr>
+                <td><strong>Value on {{stock_list.0.date|date:'d-m-Y'}}</strong></td>
+                <td>{{stock_list.0.today_value}}</td>
+            </tr>
+            <tr>
+                <td><strong>Total Profit Rs.</strong></td>
+                <td>{{stock_list.0.profit|floatformat:2|intcomma}}</td>
+            </tr>
+            <tr>
+                <td><strong>Up/Down</strong></td>
+                <td>{{ stock_list.0.profit_percentage|floatformat:2 }} %</td>
+            </tr>
+             <tr>
+                <td><strong> Action</strong></td>
+                <td>{{stock_list.0.corporate_action}}</td>
+            </tr>
+            <tr>
+                <td><strong>X Date</strong></td>
+                <td>{{stock_list.0.x_date|date}}</td>
+            </tr>
+             <tr>
+                <td><strong>Clode Price</strong></td>
+                <td>{{stock_list.0.close|intcomma}}</td>
+            </tr>
+            <tr>
+                <td><strong>SMA200</strong></td>
+                <td>{{ stock_list.0.avg_200|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td><strong>SMA100</strong></td>
+                <td>{{ stock_list.0.avg_100|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td><strong>SMA50</strong></td>
+                <td>{{ stock_list.0.avg_50|floatformat:2 }}</td>
+            </tr>
+
+
+            </tbody>
+        </table>
+    </div>
+    <div class="col">
+        <table class="table table-hover">
+            <thead class="table-light">
+            <tr>
+                <th>Item</th>
+                <th>Data</th>
+                </th></tr>
+            </thead>
+            <tbody>
+
+            <tr>
+                <td><strong>Maximum/Year high</strong></td>
+                <td>{{stock_list.0.w52_high|floatformat:2|intcomma}}</td>
+            </tr>
+            <tr>
+                <td><strong>Fibonacci First Level</strong></td>
+                <td>{{stock_list.0.first_level|floatformat:2|intcomma}}</td>
+            </tr>
+            <tr>
+                <td><strong>Fibonacci Second Level</strong></td>
+                <td>{{stock_list.0.second_level|floatformat:2|intcomma}}</td>
+            </tr>
+            <tr>
+                <td><strong>Fibonacci Third Level</strong></td>
+                <td>{{stock_list.0.third_level|floatformat:2|intcomma}}</td>
+            </tr>
+            <tr>
+                <td><strong>Fibonacci Fourth Level</strong></td>
+                <td>{{stock_list.0.fourth_level|floatformat:2|intcomma}}</td>
+            </tr>
+            <tr>
+                <td><strong>Minimum/Year low</strong></td>
+                <td>{{stock_list.0.w52_low|floatformat:2|intcomma}}</td>
+            </tr>
+            <tr>
+                <td><strong>Down from 52WH</strong></td>
+                <td>{{stock_list.0.per_down|floatformat:2|intcomma}}%</td>
+            </tr>
+            <tr>
+                <td><strong>52W Avg.</strong></td>
+                <td>{{stock_list.0.w52_avg|floatformat:2|intcomma}}</td>
+            </tr>
+
+            <tr>
+                <td><strong>Support1</strong></td>
+                <td>{{stock_list.0.s1|floatformat:2|intcomma}}</td>
+            </tr>
+            <tr>
+                <td><strong>Support2</strong></td>
+                <td>{{stock_list.0.s2|floatformat:2|intcomma}}</td>
+            </tr>
+            <tr>
+                <td><strong>Support3</strong></td>
+                <td>{{stock_list.0.s3|floatformat:2|intcomma}}</td>
+            </tr>
+            <tr>
+                <td><strong>PivotPoint</strong></td>
+                <td>{{stock_list.0.pivot|floatformat:2|intcomma}}</td>
+            </tr>
+            <tr>
+                <td><strong>Resistance1</strong></td>
+                <td>{{stock_list.0.r1|floatformat:2|intcomma}}</td>
+            </tr>
+            <tr>
+                <td><strong>Resistance2</strong></td>
+                <td>{{stock_list.0.r2|floatformat:2|intcomma}}</td>
+            </tr>
+            <tr>
+                <td><strong>Resistance3</strong></td>
+                <td>{{stock_list.0.r3|floatformat:2|intcomma}}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h5 class="text-center">Chart of {{stock_hist.0.company}}</h5>
+
+<canvas class="my-4 chartjs-render-monitor" id="myChart" width="355" height="149" style="display: block; width: 355px; height: 149px;"></canvas>
+
+
+<h5 class="text-center">Purchase History</h5>
+<table class="table table-hover">
+    <thead class="table-light">
+    <tr>
+        <th>#</th>
+        <th>Date</th>
+        <th>Company</th>
+        <th>Side</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Trade Number</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for stock in stockdata_list %}
+    <tr>
+        <th>{{forloop.counter}}</th>
+        <td>{{stock.date|date:'d-m-Y'}}</td>
+        <td>{{stock.company|title}}</td>
+        <td>{{stock.side}}</td>
+        <td>{{stock.quantity}}</td>
+        <td>{{stock.price|floatformat:2|intcomma}}</td>
+        <td>{{stock.trade_num}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+
+    <!--    <table class="table table-hover">-->
+    <!--    <tr>-->
+    <!--        <thead class="table-light">-->
+    <!--        <tr>-->
+    <!--            <th>Company</th>-->
+    <!--            <th>Holding</th>-->
+    <!--            <th>Total Price</th>-->
+    <!--            <th>Average Price</th>-->
+    <!--            <th>Value on {{stock_list.0.date|date:'d-m-Y'}}</th>-->
+    <!--            <th> Total Profit Rs.</th>-->
+    <!--            <th>Up/Down</th>-->
+    <!--            <th>Clode Price</th>-->
+    <!--            <th>52W High</th>-->
+    <!--            <th>52W Low</th>-->
+    <!--            <th>Down from 52WH</th>-->
+    <!--            <th>52W Avg.</th>-->
+    <!--        </tr>-->
+    <!--        </thead>-->
+    <!--        <tbody>-->
+    <!--        {% for stock in stock_list %}-->
+    <!--        <tr>-->
+    <!--            <td>{{stock.company__company_name|title}}</td>-->
+    <!--            <td>{{stock.qty_sum}}</td>-->
+    <!--            <td>{{stock.price_sum|floatformat:2|intcomma}}</td>-->
+    <!--            <td>{% divide stock.price_sum stock.qty_sum %}</td>-->
+    <!--            <td>{{stock.today_value}}</td>-->
+    <!--            <td> {{stock.profit|floatformat:2|intcomma}}</td>-->
+    <!--            <td>{% profitpercentage stock.price_sum stock.today_value %} %</td>-->
+    <!--            <td>{{stock.close|intcomma}}</td>-->
+    <!--            <td>{{stock.w52_high|intcomma}}</td>-->
+    <!--            <td>{{stock.w52_low|intcomma}}</td>-->
+    <!--            <td>{{stock.per_down|floatformat:2|intcomma}}%</td>-->
+    <!--            <td>{{stock.w52_avg|intcomma}}</td>-->
+
+    <!--        </tr>-->
+    <!--        {% endfor %}-->
+    <!--        </tbody>-->
+    <!--</table>-->
+</table>
+{% else %}
+<p>No stocks are available.</p>
+{% endif %}
+{% endblock %}
+
+{% block script %}
+
+    const labels = [{%for data in stock_hist%}'{{data.date|date:'d-m-Y'}}',{%endfor%}];
+const data = {
+  labels,
+  datasets: [
+    {
+      label: 'Close Price',
+      data: [{%for data in stock_hist%}{{data.close}},{%endfor%}],
+      borderColor: 'Blue',
+      borderWidth: 1,
+      tension: 0.1,
+      pointStyle:'star',
+      fill:true,
+      yAxisID: 'y',
+    },
+{
+      type: 'bar',
+      label: 'Volume',
+      data: [{%for data in stock_hist%}{{data.volume}},{%endfor%}],
+      borderColor: 'red',
+      borderWidth: 1,
+      tension: 0.1,
+      pointStyle:'star',
+      yAxisID: 'y1',
+    },
+{
+      label: 'year_high',
+      data: [{%for data in stock_hist%}{{data.year_high}},{%endfor%}],
+      borderColor: 'red',
+      borderWidth: 1,
+      tension: 0.1,
+      pointStyle:'star',
+      yAxisID: 'y',
+    },
+{
+      label: 'year_low',
+      data: [{%for data in stock_hist%}{{data.year_low}},{%endfor%}],
+      borderColor: 'green',
+      borderWidth: 1,
+      tension: 0.1,
+      pointStyle:'star',
+      yAxisID: 'y',
+    },
+{
+      label: 'first_level',
+      data: [{%for data in stock_hist%}{{data.first_level}},{%endfor%}],
+      borderColor: 'violet',
+      borderWidth: 1,
+      tension: 0.1,
+      pointStyle:'star',
+      yAxisID: 'y',
+    },
+{
+      label: 'second_level',
+      data: [{%for data in stock_hist%}{{data.second_level}},{%endfor%}],
+      borderColor: 'green',
+      borderWidth: 1,
+      tension: 0.1,
+      pointStyle:'star',
+      yAxisID: 'y',
+    },
+{
+      label: 'third_level',
+      data: [{%for data in stock_hist%}{{data.third_level}},{%endfor%}],
+      borderColor: 'blue',
+      borderWidth: 1,
+      tension: 0.1,
+      pointStyle:'star',
+      yAxisID: 'y',
+    },
+{
+      label: 'fourth_level',
+      data: [{%for data in stock_hist%}{{data.fourth_level}},{%endfor%}],
+      borderColor: 'yellow',
+      borderWidth: 1,
+      tension: 0.1,
+      pointStyle:'star',
+      yAxisID: 'y',
+    }
+  ],
+};
+
+const config = {
+  type: 'line',
+  data:data,
+  options: {
+    radius:2,
+    hitRedius:30,
+    hoverRedius:60,
+    tension:0.3,
+    responsive: true,
+    scales: {
+        y: {
+            beginAt: {{stock_hist.0.year_low}}
+            },
+        },
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: '{{stock_hist.0.company}}',
+      }
+    }
+  },
+};
+const ctx = document.getElementById('myChart');
+
+const myChart = new Chart(ctx, config);
+
+{% endblock %}
+
+
+

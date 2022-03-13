@@ -1,0 +1,14 @@
+export const baseURL = "http://127.0.0.1:8000/api";
+export const productionURL = "production/";
+export const productURL = "product/";
+export const plantURL = "plant/";
+export const orderURL = "order/";
+export const employeeURL = "employee/";
+export const userURL = "user/";
+export const designationURL = "designation/";
+export const get_tokenURL = 'api-token/';
+export const refresh_tokenURL = 'api-token-refresh/';
+export const lastreadingURL = 'lastreading/?plant=';
+export const productionOrdertURL = 'pro_report/'
+export const stateURL = 'states/'
+export const districtsURL = 'districts/?state_id='

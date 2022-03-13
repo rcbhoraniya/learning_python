@@ -1,22 +1,20 @@
 import json, csv
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView, RedirectView
-from .models import Product, PlantProduction, Order, Operator
+from .models import Product, PlantProduction, Order, Employee
 from django.http import HttpResponse, request
-from .forms import PlantProductionForm, ProductForm, OrderForm, OperatorForm
+from .forms import PlantProductionForm, ProductForm, OrderForm, EmployeeForm
 from django.db.models import Avg, Max, Min, Sum, Count, F
 import pandas as pd
 import numpy as np
 from django.shortcuts import redirect
-from .tables import PlantProductionTable, ProductTable, OrderTable, OperatorTable
-from .filters import PlantProductionFilter, ProductFilter, OrderFilter, OperatorFilter
+from .tables import PlantProductionTable, ProductTable, OrderTable, EmployeeTable
+from .filters import PlantProductionFilter, ProductFilter, OrderFilter, EmployeeFilter
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin, MultiTableMixin
 from django_tables2.export.views import ExportMixin
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
-from django.contrib.auth.models import User
 from django.contrib.auth.views import *
 from django.contrib.auth.forms import *
-from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 
 pd.set_option('display.width', 1500)
@@ -34,15 +32,10 @@ class PermissionDeniedView(TemplateView):
 
 class UserAccessMixin(PermissionRequiredMixin, LoginRequiredMixin):
 
-    # def __init__(self, *args: object):
-    #     super().__init__(args)
-    #     self.request = None
-
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect_to_login(request.get_full_path(), self.get_login_url(), self.get_redirect_field_name())
         if not self.has_permission():
-
             return redirect('toris:permissiondenied')
         return super(UserAccessMixin, self).dispatch(request, *args, **kwargs)
 
@@ -52,9 +45,6 @@ class UserRegistrationView(CreateView):
     form_class = UserCreationForm
     template_name = 'toris/registration.html'
     success_url = reverse_lazy('toris:login')
-
-
-
 
 
 @method_decorator(login_required(login_url='toris:login', redirect_field_name='next'), name='dispatch')
@@ -68,7 +58,6 @@ class PlantProductionListView(ExportMixin, SingleTableMixin, FilterView, ):
     export_name = 'Plant Production'
 
     def get_queryset(self):
-        # qs = self.model.plantmanager.tpf_day().annotate(production_in_kg=(F('end_reading') - F('start_reading')))
         qs = self.model.objects.all().annotate(production_in_kg=(F('end_reading') - F('start_reading'))).order_by(
             'date', 'end_reading')
         filtered_list = PlantProductionFilter(self.request.GET, queryset=qs)
@@ -115,18 +104,18 @@ class OrderListView(ExportMixin, SingleTableMixin, FilterView, ):
 
 
 @method_decorator(login_required(login_url='toris:login', redirect_field_name='next'), name='dispatch')
-class OperatorListView(ExportMixin, SingleTableMixin, FilterView, ):
-    model = Operator
-    table_class = OperatorTable
+class EmployeeListView(ExportMixin, SingleTableMixin, FilterView, ):
+    model = Employee
+    table_class = EmployeeTable
     template_name = 'toris/operator_list.html'
-    filterset_class = OperatorFilter
+    filterset_class = EmployeeFilter
     table_pagination = {"per_page": 10}
     export_formats = ['xlsx', 'csv']
-    export_name = 'Operator'
+    export_name = 'Employee'
 
     def get_queryset(self):
         qs = self.model.objects.all()
-        filtered_list = OperatorFilter(self.request.GET, queryset=qs)
+        filtered_list = EmployeeFilter(self.request.GET, queryset=qs)
         return filtered_list.qs
 
 
@@ -141,8 +130,6 @@ class PlantProductionCreateView(UserAccessMixin, CreateView):
     form_class = PlantProductionForm
     template_name = 'toris/plant-production-add.html'
     success_url = reverse_lazy('toris:production_list')
-
-
 
 
 class ProductCreateView(UserAccessMixin, CreateView):
@@ -171,15 +158,15 @@ class OrderCreateView(UserAccessMixin, CreateView):
     success_url = reverse_lazy('toris:order_list')
 
 
-class OperatorCreateView(UserAccessMixin, CreateView):
+class EmployeeCreateView(UserAccessMixin, CreateView):
     raise_exception = False
-    permission_required = ('toris.add_operator',)
+    permission_required = ('toris.add_employee',)
     permission_denied_message = 'Not Authorise'
     login_url = 'toris:login'
     redirect_field_name = 'next'
 
-    model = Operator
-    form_class = OperatorForm
+    model = Employee
+    form_class = EmployeeForm
     template_name = 'toris/operator_add.html'
     success_url = reverse_lazy('toris:operator_list')
 
@@ -223,14 +210,14 @@ class OrderDetailView(UserAccessMixin, DetailView):
     context_object_name = 'orderdetail'
 
 
-class OperatorDetailView(UserAccessMixin, DetailView):
+class EmployeeDetailView(UserAccessMixin, DetailView):
     raise_exception = False
-    permission_required = ('toris.view_operator',)
+    permission_required = ('toris.view_employee',)
     permission_denied_message = 'Not Authorise'
     login_url = 'toris:login'
     redirect_field_name = 'next'
 
-    model = Operator
+    model = Employee
     template_name = 'toris/operator_detail.html'
     context_object_name = 'operatordetail'
 
@@ -277,17 +264,17 @@ class OrderUpdateView(UserAccessMixin, UpdateView):
     success_url = reverse_lazy('toris:order_list')
 
 
-class OperatorUpdateView(UserAccessMixin, UpdateView):
+class EmployeeUpdateView(UserAccessMixin, UpdateView):
     raise_exception = False
-    permission_required = ('toris.change_operator',)
+    permission_required = ('toris.change_employee',)
     permission_denied_message = 'Not Authorise'
     login_url = 'toris:login'
     redirect_field_name = 'next'
 
-    model = Operator
+    model = Employee
     template_name = 'toris/operator_update.html'
     context_object_name = 'operator'
-    form_class = OperatorForm
+    form_class = EmployeeForm
     success_url = reverse_lazy('toris:operator_list')
 
 
@@ -342,14 +329,14 @@ class OrderDeleteView(UserAccessMixin, DeleteView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class OperatorDeleteView(UserAccessMixin, DeleteView):
+class EmployeeDeleteView(UserAccessMixin, DeleteView):
     raise_exception = False
-    permission_required = ('toris.delete_operator',)
+    permission_required = ('toris.delete_employee',)
     permission_denied_message = 'Not Authorise'
     login_url = 'toris:login'
     redirect_field_name = 'next'
 
-    model = Operator
+    model = Employee
     template_name = 'toris/operator_delete.html'
     success_url = reverse_lazy('toris:operator_list')
 
@@ -414,7 +401,6 @@ def export_production_order_csv(request):
     production_order = production_order.sort_values(['product_code'])
     production_order = production_order[production_order['net_p'] != 0]
     production_order = production_order.drop(columns=['id', 'is_deleted', 'deleted_at'])
-    # print(production_order)
     production_order = production_order.values.tolist()
     for item in production_order:
         writer.writerow(item)
@@ -424,7 +410,5 @@ def export_production_order_csv(request):
 def load_start_reading(request):
     plant_id = request.GET.get('plant')
     query = PlantProduction.objects.filter(plant=plant_id).order_by('end_reading').last()
-    # print(query)
     end_reading = query.end_reading
-    # print(end_reading)
     return HttpResponse(json.dumps(end_reading), content_type='application/json')

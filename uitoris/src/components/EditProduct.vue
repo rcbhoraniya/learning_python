@@ -1,9 +1,11 @@
 <template>
   <div>
-    <b-button variant="outline-info" size="sm" to="/production">Back</b-button>
-    <h4 class="text-center">{{ formname }}{{ form.id }}</h4>
+    <router-link to="/product"
+      ><b-button variant="outline-primary" size="sm">Back</b-button></router-link
+    >
     <b-container>
-      <b-card>
+      <b-card class="bg-form col-12">
+        <h2 class="text-center">{{ formname }}{{ form.id }}</h2>
         <b-form @submit.prevent="onSubmitForm" v-if="!showform">
           <b-row>
             <b-col>
@@ -28,8 +30,20 @@
                   class="mb-2"
                   required
                 ></b-form-input>
-              </b-form-group> </b-col
-            ><b-col>
+              </b-form-group>
+            </b-col>
+            <b-col>
+              <b-form-group label="Tape color:" label-for="tape_color">
+                <b-form-input
+                  id="tape_color"
+                  v-model="form.tape_color"
+                  placeholder="Enter  tape_color"
+                  class="mb-2"
+                  required
+                ></b-form-input>
+              </b-form-group>
+            </b-col>
+            <b-col>
               <b-form-group label="Denier:" label-for="denier">
                 <b-form-input
                   id="denier"
@@ -62,7 +76,7 @@
               </b-form-group> </b-col
             ><b-col>
               <b-form-group
-                label="cutter_spacing:"
+                label="Cutter spacing:"
                 label-for="cutter_spacing"
                 description=""
               >
@@ -73,12 +87,11 @@
                   placeholder="Enter cutter_spacing "
                   required
                 ></b-form-input>
-              </b-form-group> </b-col
-          ></b-row>
-          <b-row>
+              </b-form-group>
+            </b-col>
             <b-col>
               <b-form-group
-                label="streanth_per_tape_in_kg:"
+                label="Streanth per tape in kg:"
                 label-for="streanth_per_tape_in_kg"
                 description=""
               >
@@ -89,10 +102,13 @@
                   placeholder="Enter streanth_per_tape_in_kg "
                   required
                 ></b-form-input>
-              </b-form-group> </b-col
-            ><b-col>
+              </b-form-group>
+            </b-col>
+          </b-row>
+          <b-row>
+            <b-col>
               <b-form-group
-                label="elongation_percent:"
+                label="Elongation percent:"
                 label-for="elongation_percent"
                 description=""
               >
@@ -105,7 +121,7 @@
                 ></b-form-input>
               </b-form-group> </b-col
             ><b-col>
-              <b-form-group label="tenacity:" label-for="tenacity" description="">
+              <b-form-group label="Tenacity:" label-for="tenacity" description="">
                 <b-form-input
                   id="tenacity"
                   v-model="form.tenacity"
@@ -113,11 +129,10 @@
                   placeholder="Enter tenacity "
                   required
                 ></b-form-input>
-              </b-form-group> </b-col
-          ></b-row>
-          <b-row>
+              </b-form-group>
+            </b-col>
             <b-col>
-              <b-form-group label="pp_percent:" label-for="pp_percent" description="">
+              <b-form-group label="PP percent:" label-for="pp_percent" description="">
                 <b-form-input
                   id="pp_percent"
                   v-model="form.pp_percent"
@@ -128,7 +143,7 @@
               </b-form-group> </b-col
             ><b-col>
               <b-form-group
-                label="filler_percent:"
+                label="Filler percent:"
                 label-for="filler_percent"
                 description=""
               >
@@ -139,10 +154,13 @@
                   placeholder="Enter filler_percent "
                   required
                 ></b-form-input>
-              </b-form-group> </b-col
-            ><b-col>
+              </b-form-group>
+            </b-col>
+          </b-row>
+          <b-row>
+            <b-col>
               <b-form-group
-                label="shiner_percent:"
+                label="Shiner percent:"
                 label-for="shiner_percent"
                 description=""
               >
@@ -153,11 +171,11 @@
                   placeholder="Enter shiner_percent "
                   required
                 ></b-form-input>
-              </b-form-group> </b-col></b-row
-          ><b-row>
+              </b-form-group>
+            </b-col>
             <b-col>
               <b-form-group
-                label="color_percent:"
+                label="Color percent:"
                 label-for="color_percent"
                 description=""
               >
@@ -170,7 +188,7 @@
                 ></b-form-input>
               </b-form-group> </b-col
             ><b-col>
-              <b-form-group label="tpt_percent:" label-for="tpt_percent" description="">
+              <b-form-group label="TPT percent:" label-for="tpt_percent" description="">
                 <b-form-input
                   id="tpt_percent"
                   v-model="form.tpt_percent"
@@ -180,7 +198,7 @@
                 ></b-form-input>
               </b-form-group> </b-col
             ><b-col>
-              <b-form-group label="uv_percent:" label-for="uv_percent" description="">
+              <b-form-group label="UV percent:" label-for="uv_percent" description="">
                 <b-form-input
                   id="uv_percent"
                   v-model="form.uv_percent"
@@ -188,10 +206,11 @@
                   placeholder="Enter uv_percent "
                   required
                 ></b-form-input>
-              </b-form-group> </b-col></b-row
+              </b-form-group>
+            </b-col> </b-row
           ><b-row>
             <b-col>
-              <b-form-group label="color_name:" label-for="color_name" description="">
+              <b-form-group label="Color name:" label-for="color_name" description="">
                 <b-form-input
                   id="color_name"
                   v-model="form.color_name"
@@ -201,9 +220,12 @@
                 ></b-form-input> </b-form-group></b-col
             ><b-col> </b-col>
             <b-col> </b-col>
+            <b-col> </b-col>
           </b-row>
 
-          <b-button type="submit" variant="primary" class="mr-2">Submit</b-button>
+          <div class="text-center">
+            <b-button type="submit" variant="primary">Submit</b-button>
+          </div>
         </b-form>
 
         <div v-else>
@@ -225,45 +247,25 @@ export default {
     return {
       formname: "Edit Producti#",
       product: null,
-      options: [
-        { value: "Day", text: "DAY" },
-        { value: "Night", text: "NIGHT" },
-      ],
-
       showform: false,
     };
   },
   computed: {
-    // ...mapGetters("product", { getProductbyPlant: "getProductByPlant" }),
-    // ...mapState({ plants: (state) => state.plant.plantall }),
-    // ...mapState({ products: (state) => state.product.productall }),
-    // ...mapState({ operators: (state) => state.operator.operatorall }),
     ...mapState({ form: (state) => state.product.product }),
   },
   mounted() {
     this.getProductById(this.$route.params.id);
-    // this.getPlants();
-    // this.getProducts();
-    // this.getOperators();
-    // this.getProductions();
   },
   methods: {
-    // ...mapActions("plant", ["getPlants"]),
     ...mapActions("product", ["getProductById", "editProduct"]),
-    // ...mapActions("operator", ["getOperators"]),
-    // ...mapActions("production", ["addProduction", "getProductions"]),
-
     onSubmitForm() {
-      // event.preventDefault();
       var data = this.form;
-      //   console.log(data);
       this.editProduct(data);
-      this.data = {};
       this.showform = true;
       this.$router.push("/product");
     },
-
     // this.$router.go();
   },
 };
 </script>
+<style lang="css" scoped></style>

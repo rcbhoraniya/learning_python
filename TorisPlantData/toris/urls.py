@@ -1,10 +1,6 @@
 from django.urls import path
 from .views import *
 from django.contrib.auth import views as auth_views
-from django.contrib.auth.views import *
-from django.conf import settings
-from django.conf.urls.static import static
-
 
 app_name = 'toris'
 urlpatterns = [
@@ -25,14 +21,13 @@ urlpatterns = [
     path('order/<int:pk>/update/', OrderUpdateView.as_view(), name='order_update'),
     path('order/<int:pk>/delete/', OrderDeleteView.as_view(), name='order_delete'),
     path('ajax/load-plant/', load_start_reading, name='ajax_load_plant'),  # <-- this one here
-    path('operator-detail/<int:pk>/', OperatorDetailView.as_view(), name='operator_detail'),
-    path('operator-create/', OperatorCreateView.as_view(), name='operator_create'),
-    path('operator/<int:pk>/update/', OperatorUpdateView.as_view(), name='operator_update'),
-    path('operator/<int:pk>/delete/', OperatorDeleteView.as_view(), name='operator_delete'),
-    path('operator-list/', OperatorListView.as_view(), name='operator_list'),
+    path('operator-detail/<int:pk>/', EmployeeDetailView.as_view(), name='operator_detail'),
+    path('operator-create/', EmployeeCreateView.as_view(), name='operator_create'),
+    path('operator/<int:pk>/update/', EmployeeUpdateView.as_view(), name='operator_update'),
+    path('operator/<int:pk>/delete/', EmployeeDeleteView.as_view(), name='operator_delete'),
+    path('operator-list/', EmployeeListView.as_view(), name='operator_list'),
     path('production-order/', ProductionOrderListView.as_view(), name='production_order_list'),
     path('export/',export_production_order_csv, name='export_production_order_csv'),
-
     path("register", UserRegistrationView.as_view(), name="register"),
     path("no-permission", PermissionDeniedView.as_view(), name="permissiondenied"),
     path('login/', auth_views.LoginView.as_view(template_name = 'toris/login.html'),name = 'login'),

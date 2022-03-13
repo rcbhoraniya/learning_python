@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% load extra %}
+{% load humanize %}
+{% block title %}Home{% endblock %}
+{% block content %}
+{% if stock_list %}
+<a class="btn btn-sm btn-secondary mt-2" href="{% url 'stocks:exportcsv' %}">Downloads</a>
+<a class="btn btn-sm btn-secondary mt-2" href="{% url 'stocks:refresh_price' %}">Refresh</a>
+
+<h5 class="text-center mt-1 " style="color: green">Portfolio Summary on Dated: {{stock_list.0.date|date:'d/m/Y'}}</h5>
+<ul class="list ">
+    <li>
+        Total Investment : Rs. {{stock_list.0.total_investment|floatformat:2|intcomma}}
+    </li>
+    <li>
+        Portfolio Up :{{stock_list.0.port_per_up|floatformat:2}} %
+    </li>
+    <li>
+        Total Profit : Rs. {{stock_list.0.profit_sum|floatformat:2|intcomma}}
+    </li>
+    <li>
+        Demate account no : 1208180000074941
+    </li>
+    <li>
+        Broker name : RKSV Securities ltd - Mumbai
+    </li>
+    <li>
+        Client id : 272554
+    </li>
+</ul>
+
+<form action="{% url 'stocks:search' %}" method="get">
+    {% csrf_token %}
+    <div class="row g-3">
+        <div class="col-md-6">
+            <select class="form-control form-select form-inline mb-3" aria-label="Default select example" name="search">
+                <option selected>All stocks</option>
+                <option value="new_intraday_high">New Intraday High</option>
+                <option value="new_closing_high">New Closing High</option>
+                <option value="new_intraday_low">New Intraday Low</option>
+                <option value="new_closing_low">New Closing Low</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <input type="submit" value="Submit" class="btn  btn-primary">
+        </div>
+    </div>
+</form>
+
+
+<table id="index-table" class="table table-hover table-sm">
+    <thead class="table-light">
+    <tr>
+        <th>#</th>
+        <th>Company Name</th>
+        <th>NSE Symbol</th>
+        <th>Sector</th>
+        <th>Market Cap</th>
+        <th>Holding Quantity</th>
+        <th>Total Amount</th>
+        <th>Average price</th>
+        <th>Value on {{stock_list.0.date|date:'d-m-Y'}}</th>
+        <th>Profit on {{stock_list.0.date|date:'d-m-Y'}}</th>
+        <th>Protfolio weight %</th>
+        <th>Profit %</th>
+        <th>Close price {{stock_list.0.date|date:'d-m-Y'}}</th>
+        <th>Year High %</th>
+        <th>Year Low</th>
+        <th>Price Down %</th>
+        <th>Change</th>
+        <th>Change %</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for stock in stock_list %}
+    <tr>
+        <th>{{forloop.counter}}</th>
+        <td><a class="text-decoration-none link-success" href="{% url 'stocks:portfolio_detail' stock.id %}">
+            {{stock.name|title}}</a></td>
+        <td><a class="text-decoration-none" href="{% url 'stocks:historicaldata' stock.id %}">
+            {{stock.nse_symbol }}</a></td>
+        <td>{{stock.sector.sector}}</td>
+        <td>{{stock.m_cap.name}}</td>
+        <td>{{stock.qty_sum}}</td>
+        <td>{{stock.price_sum|floatformat:2|intcomma}}</td>
+        <td>{{stock.average_price|floatformat:2|intcomma}}</td>
+        <td>{{stock.today_value|intcomma}}</td>
+        <td>{{stock.profit|floatformat:2}}</td>
+        <td>{{stock.portweight|floatformat:2}}%</td>
+        <td>{{stock.profit_percentage|floatformat:2}}%</td>
+        <td>{{stock.close|intcomma}}</td>
+        <td>{{stock.w52_high|floatformat:2|intcomma}}</td>
+        <td>{{stock.w52_low|floatformat:2|intcomma}}</td>
+        <td>{{stock.per_down|floatformat:2|intcomma}}%</td>
+        <td>{{stock.change|floatformat:2|intcomma}}</td>
+        <td>{{stock.pchange|floatformat:2|intcomma}}%</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<p>No stocks are available.</p>
+{% endif %}
+
+<!--Pagination-->
+<nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1">First</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" href="#" tabindex="-1" aria-disabled="True">Previous</a>
+        </li>
+        {% endif %}
+        {% for i in page_obj.paginator.page_range %}
+        {% if page_obj.number == i %}
+        <li class="page-item active" aria-current="page">
+              <span class="page-link">
+                {{ i }}
+              </span>
+        </li>
+        {% else %}
+        <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" href="#" tabindex="-1" aria-disabled="True">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+<!--end of Pagination-->
+{% endblock %}
+{% block script %}
+$(document).ready(function() {
+$('#index-table').DataTable({searching: false, paging: false, info: false});
+});
+{% endblock %}
+
+

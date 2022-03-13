@@ -1,10 +1,11 @@
 <template>
   <div>
-    <b-button variant="outline-info" size="sm" to="/production">Back</b-button>
-    <h4 class="text-center">{{ formname }}{{ form.id }}</h4>
-
+    <router-link to="/production"
+      ><b-button variant="outline-primary" size="sm">Back</b-button></router-link
+    >
     <b-container>
-      <b-card>
+      <b-card class="bg-form col-12">
+        <h3 class="text-center">{{ formname }}{{ form.id }}</h3>
         <b-form @submit="onSubmitForm" v-if="!showform">
           <b-row>
             <b-col>
@@ -16,7 +17,8 @@
                   required
                 ></b-form-datepicker>
               </b-form-group>
-
+            </b-col>
+            <b-col>
               <b-form-group label="Plant:" label-for="plant" description="">
                 <b-form-select
                   id="plant"
@@ -26,7 +28,8 @@
                   text-field="name"
                 ></b-form-select>
               </b-form-group>
-
+            </b-col>
+            <b-col>
               <b-form-group label="Product Code:" label-for="product_code" description="">
                 <b-form-select id="product_code" v-model="form.product_code" class="mb-3">
                   <b-form-select-option
@@ -39,8 +42,11 @@
                     }}-{{ product.denier }}
                   </b-form-select-option>
                 </b-form-select>
-              </b-form-group> </b-col
-            ><b-col>
+              </b-form-group>
+            </b-col>
+          </b-row>
+          <b-row>
+            <b-col>
               <b-form-group label="Shift:" label-for="shift" description="">
                 <b-form-select
                   id="shift"
@@ -51,7 +57,8 @@
                   disabled-field="notEnabled"
                 ></b-form-select>
               </b-form-group>
-
+            </b-col>
+            <b-col>
               <b-form-group
                 label="Operator name:"
                 label-for="operator_name"
@@ -59,12 +66,13 @@
               >
                 <b-form-select
                   v-model="form.operator_name"
-                  :options="operators"
+                  :options="employeeOperator"
                   value-field="id"
                   text-field="name"
                 ></b-form-select>
               </b-form-group>
-
+            </b-col>
+            <b-col>
               <b-form-group
                 label="No of winderman:"
                 label-for="no_of_winderman"
@@ -77,8 +85,11 @@
                   placeholder="Enter no_of_winderman "
                   required
                 ></b-form-input>
-              </b-form-group> </b-col
-            ><b-col>
+              </b-form-group>
+            </b-col>
+          </b-row>
+          <b-row>
+            <b-col>
               <b-form-group label="end_reading:" label-for="end_reading" description="">
                 <b-form-input
                   id="end_reading"
@@ -88,7 +99,8 @@
                   required
                 ></b-form-input>
               </b-form-group>
-
+            </b-col>
+            <b-col>
               <b-form-group
                 label="start_reading:"
                 label-for="start_reading"
@@ -102,7 +114,8 @@
                   required
                 ></b-form-input>
               </b-form-group>
-
+            </b-col>
+            <b-col>
               <b-form-group label="wastage:" label-for="wastage" description="">
                 <b-form-input
                   id="wastage"
@@ -113,7 +126,9 @@
                 ></b-form-input>
               </b-form-group> </b-col
           ></b-row>
-          <b-button type="submit" variant="primary" class="mr-2">Submit</b-button>
+          <div class="text-center">
+            <b-button type="submit" variant="primary">Submit</b-button>
+          </div>
           <!-- <b-button variant="danger" @click="Reset">Reset</b-button> -->
         </b-form>
         <div v-else>
@@ -128,7 +143,7 @@
 </template>
 
 <script>
-import { mapActions, mapState } from "vuex";
+import { mapActions, mapState, mapGetters } from "vuex";
 
 export default {
   data() {
@@ -144,32 +159,31 @@ export default {
     };
   },
   computed: {
+    ...mapGetters("employee", { employeeOperator: "employeeOperator" }),
     ...mapState({ plants: (state) => state.plant.plantall }),
     ...mapState({ products: (state) => state.product.productall }),
-    ...mapState({ operators: (state) => state.operator.operatorall }),
     ...mapState({ form: (state) => state.production.production }),
   },
   mounted() {
     this.getPlants();
     this.getProducts();
-    this.getOperators();
+    this.getEmployees();
     this.getProductionById(this.$route.params.id);
   },
   methods: {
     ...mapActions("plant", ["getPlants"]),
     ...mapActions("product", ["getProducts"]),
-    ...mapActions("operator", ["getOperators"]),
+    ...mapActions("employee", ["getEmployees"]),
     ...mapActions("production", ["getProductionById", "editProduction"]),
 
     onSubmitForm() {
       event.preventDefault();
       var data = this.form;
-      //   console.log(data);
       this.editProduction(data);
-      this.data = {};
       this.showform = true;
       this.$router.push("/production");
     },
   },
 };
 </script>
+<style lang="scss" scoped></style>

@@ -1,7 +1,9 @@
 <template>
   <div>
-    <b-button variant="outline-info" size="sm" to="/production/add"
-      >Add Plant Data</b-button
+    <router-link to="/production/add"
+      ><b-button variant="outline-primary" size="sm"
+        >Add Plant Data</b-button
+      ></router-link
     >
     <b-button size="sm" class="float-right" @click="csvExport(csvData)">
       Export to CSV
@@ -93,7 +95,7 @@
         <b-button variant="danger" class="mr-2" size="sm" @click="showModal(row.item.id)"
           ><i class="far fa-trash-alt text-light"></i
         ></b-button>
-        <b-button variant="info" size="sm" @click="row.toggleDetails">{{
+        <b-button variant="secondary" size="sm" @click="row.toggleDetails">{{
           row.detailsShowing ? "Hide" : "Show"
         }}</b-button>
       </template>
@@ -106,7 +108,7 @@
             </b-col>
             <b-col>{{ value }}</b-col>
           </b-row>
-          <b-button variant="info" size="sm" @click="row.toggleDetails"
+          <b-button variant="primary" size="sm" @click="row.toggleDetails"
             >Hide Details</b-button
           >
         </b-card>
@@ -232,7 +234,7 @@ export default {
           label: "Product Code",
           sortable: true,
           sortDirection: "desc",
-          thClass: "my-class2",
+          thClass: "my-class1",
         },
         {
           key: "color_marking_on_bobin",
@@ -273,7 +275,7 @@ export default {
           label: "production in kg",
           sortable: true,
           sortDirection: "desc",
-          thClass: "my-class1",
+          thClass: "my-class",
         },
         {
           key: "wastage",
@@ -310,8 +312,6 @@ export default {
     csvData() {
       return this.items.map((item) => ({
         ...item,
-        // plant: "TPF", //item.address.city,
-        // shift: "Day", //item.company.name
       }));
     },
 
@@ -336,8 +336,8 @@ export default {
       this.hideModal();
     },
 
-    EditProduction(id) {
-      this.$router.push("/production/" + id);
+    EditProduction(Id) {
+      this.$router.push({ name: "EditPlantProduction", params: { id: Id } });
     },
 
     showModal(id) {
@@ -358,7 +358,7 @@ export default {
         params["page"] = currentPage;
       }
       if (perPage) {
-        params["pagesize"] = perPage;
+        params["page_size"] = perPage;
       }
       return params;
     },
@@ -398,7 +398,7 @@ export default {
       handler: function (value) {
         this.currentPage = value;
         this.retrieveProductions();
-        console.log(this.currentPage);
+        // console.log(this.currentPage);
       },
     },
     perPage: {
@@ -411,9 +411,9 @@ export default {
   },
 };
 </script>
-<style lang="css">
+<style lang="scss" scoped>
 .my-class {
-  max-width: 80px;
+  max-width: 90px;
 }
 .my-class1 {
   max-width: 70px;

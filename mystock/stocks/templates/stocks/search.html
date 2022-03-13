@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+
+<table id="serch-table" class="table table-hover table-sm table-responsive">
+        <thead class="table-light">
+            <tr><th>#</th>
+                <th>NSE Symbol</th>
+                <th>Name</th>
+                <th>52W High</th>
+                <th>52W High Date</th>
+                <th>52W Low</th>
+                <th>52W Low Date</th>
+                <th>52W Avg Price</th>
+                <th>Close</th>
+                <th>Close Date</th>
+                <th>Fib Pivot</th>
+                <th>S1</th>
+                <th>S2</th>
+                <th>S3</th>
+                <th>R1</th>
+                <th>R2</th>
+                <th>R3</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stock in all_search_results %}
+            <tr>
+                <th>{{forloop.counter}}</th>
+                <td>{{stock.nse_symbol}}</td>
+                <td><a class="text-decoration-none link-success" href="{% url 'stocks:historicaldata' stock.id %}">{{ stock.company_name }}</a></td>
+                <td>{{stock.max_close}}</td>
+                <td>{{stock.max_date|date:'d-m-Y'}}</td>
+                <td>{{stock.min_close}}</td>
+                <td>{{stock.min_date|date:'d-m-Y'}}</td>
+                <td>{{stock.avg_price|floatformat:2}}</td>
+                <td>{{stock.close}}</td>
+                <td>{{stock.date|date:'d-m-Y'}}</td>
+                <td>{{stock.pivot|floatformat:2}}</td>
+                <td>{{stock.s1|floatformat:2}}</td>
+                <td>{{stock.s2|floatformat:2}}</td>
+                <td>{{stock.s3|floatformat:2}}</td>
+                <td>{{stock.r1|floatformat:2}}</td>
+                <td>{{stock.r2|floatformat:2}}</td>
+                <td>{{stock.r3|floatformat:2}}</td>
+                 <td>{{stock.d200_avg|floatformat:2}}</td>
+                 <td>{{stock.d100_avg|floatformat:2}}</td>
+                 <td>{{stock.d50_avg|floatformat:2}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+</table>
+
+{% endblock %}
+
+{% block script %}
+$(document).ready(function() {
+$('#serch-table').dataTable({searching: false, paging: false, info: false});
+} );
+{% endblock %}

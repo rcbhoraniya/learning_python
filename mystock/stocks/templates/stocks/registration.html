@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Registration{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center align-items-center ">
+    <div class="col-sm-6  ">
+        <h5 class="text-center alert alert-info mt-2">Registration Form</h5>
+        <form action="" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="hidden" name="next" value="{{ next }}">
+            <td><input type="submit" value="Add" class="btn btn-success"></td>
+    </form>
+    </div>
+</div>
+
+{# Assumes you setup the password_reset view in your URLconf #}
+
+{% endblock %}

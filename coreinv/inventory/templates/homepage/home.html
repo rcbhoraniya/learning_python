@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} Home {% endblock title %}
+ {% block content %}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom ">
+    <h1 class="h2">Welcome, {{ request.user.username }} </h1>
+
+</div>
+
+<canvas id="myChart" width="400" height="100"></canvas>
+<div class="row">
+    <div class="col-md-6 mb-2">
+        <a href="{% url 'inventory:new-sales' %}" class="btn btn-info">New Outgoing Stock</a>
+    </div>
+    <div class="col-md-6 mb-2">
+        <a href="{% url 'inventory:new-purchase' %}" class="btn btn-info">New Incoming Stock</a>
+    </div>
+</div>
+<br>
+<div class="content-section">
+    <div class="row">
+        <div class="col">
+            <h4 style="color:blue; font-style: bold;">Most Recent Sales</h4><br>
+            {% for item in sales %}
+
+            <div class="row">
+                <div class="col">
+                    Bill No: {{ item.invoice_number }} <br>
+                    Purchased by {{ item.customer.name }} <br>
+                    Date:<small>{{ item.date|date:'d/m/Y' }}</small><br>
+                </div>
+                <div class="col">Rs. {{ item.get_total_price }} <a href="{% url 'inventory:salesbill_viewer' item.invoice_number %}" class="btn btn-primary btn-sm">View Bill</a></div>
+            </div><br>
+            {% endfor %}
+        </div>
+
+        <div class="col">
+            <h4 style="color:green; font-style: bold;">Most Recent Purchases</h4><br>
+            {% for item in purchases %}
+
+            <div class="row">
+                <div class="col">
+                    Bill No: {{ item.invoice_number }} <br>
+                    Purchased from {{ item.supplier.name }} <br>
+                    Date:<small>{{ item.date|date:'d/m/Y' }}</small><br>
+                </div>
+                <div class="col">Rs. {{ item.get_total_price }} <a href="{% url 'inventory:purchasebill_viewer' item.invoice_number %}" class="btn btn-primary btn-sm">View Bill</a></div>
+            </div><br>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+<!-- Loading Chart JS -->
+<script src="{% static 'js/Chart.min.js' %}"></script>
+<script>
+    const ctx = document.getElementById('myChart');
+    const myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels:[{%for data in stock%}'{{data.product.name}}',{%endfor%}],
+        datasets: [{
+            label: '# of Votes',
+            data: [{%for data in stock%}{{data.quantity}},{%endfor%}],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+      scales: {
+        yAxes: [{
+            ticks: {
+                beginAtZero: true
+            }
+        }]
+    }
+    }
+});
+
+</script>
+
+{% endblock content %}

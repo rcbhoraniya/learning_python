@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Sector wise detail{% endblock %}
+
+{% block content %}
+
+{% if stock_marketcap %}
+
+<h3 class="text-center">Market Cap </h3>
+<table id="marketcap" class="table table-hover">
+        <thead class="table-light">
+        <tr>
+            <th>#</th>
+            <th>Market Cap</th>
+            <th>Investment Rs.</th>
+            <th>Market Cap Weight %</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for data in stock_marketcap %}
+        <tr>
+            <th>{{forloop.counter}}</th>
+            <td>{{data.name|intcomma}}</td>
+            <td>{{data.m_cap_sum|floatformat:2|intcomma}}</td>
+            <td>{{ data.weight|floatformat:2}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+</table>
+
+{% else %}
+<p>No stocks are available.</p>
+{% endif %}
+{% endblock %}
+
+{% block script %}
+$(document).ready(function() {
+$('#marketcap').dataTable({searching: false, paging: false, info: false});
+} );
+{% endblock %}
