@@ -21,7 +21,7 @@
         "core-js": "^3.6.5",
         "jquery": "^3.6.0",
         "js-cookie": "^3.0.0",
-        "moment": "^2.29.1",
+        "moment": "^2.29.2",
         "popper.js": "^1.16.1",
         "rfs": "^9.0.5",
         "vee-validate": "^3.4.12",
