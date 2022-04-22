@@ -133,7 +133,7 @@ PyJWT==1.7.1
 Pympler==0.8
 PyMsgBox==1.0.9
 pyparsing==2.4.7
-PyPDF2==1.26.0
+PyPDF2==1.27.5
 PyPDF3==1.0.1
 pyperclip==1.8.1
 pypiwin32==223
