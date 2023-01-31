@@ -157,6 +157,27 @@
 
 <h5 class="text-center">Chart of {{stock_hist.0.company}}</h5>
 
+<form action="{% url 'stocks:portfolio_detail' stock_list.0.company %}" >
+    {% csrf_token %}
+    <div class="row g-3">
+        <div class="col-md-2">
+            <select class="form-control form-select form-inline mb-3" aria-label="Default select example" name="search">
+                <option selected>Select Chart</option>
+                <option value="1_year_chart">1 Year Chart</option>
+                <option value="2_year_chart">2 Year Chart</option>
+                <option value="3_year_chart">3 Year Chart</option>
+                <option value="4_year_chart">4 Year Chart</option>
+                <option value="5_year_chart">5 Year Chart</option>
+                <option value="10_year_chart">10 Year Chart</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <input type="submit" value="Submit" class="btn  btn-primary">
+        </div>
+    </div>
+</form>
+
+
 <canvas class="my-4 chartjs-render-monitor" id="myChart" width="355" height="149" style="display: block; width: 355px; height: 149px;"></canvas>
 
 
@@ -170,6 +191,7 @@
         <th>Side</th>
         <th>Quantity</th>
         <th>Price</th>
+        <th>Total Price</th>
         <th>Trade Number</th>
     </tr>
     </thead>
@@ -179,9 +201,10 @@
         <th>{{forloop.counter}}</th>
         <td>{{stock.date|date:'d-m-Y'}}</td>
         <td>{{stock.company|title}}</td>
-        <td>{{stock.side}}</td>
-        <td>{{stock.quantity}}</td>
+        <td>{% if stock.side == 1 %} Buy {% else %}Sell{%endif%}</td>
+        <td>{{stock.get_quantity}}</td>
         <td>{{stock.price|floatformat:2|intcomma}}</td>
+        <td>{{stock.get_total_price|floatformat:2|intcomma}}</td>
         <td>{{stock.trade_num}}</td>
     </tr>
     {% endfor %}

@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+<nav class="navbar navbar-expand-lg py-md-3 navbar-dark sticky-top shadow" style="background-color: #6f42c1;">
     <div class="container-fluid">
         <a class="navbar-brand" href="{% url 'inventory:home' %}">Rutvi General Store</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -26,8 +26,8 @@
                         Inventory
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown1">
-                        <li><a class="dropdown-item" href="{% url 'inventory:stock-list' %}">Stock List</a></li>
-                        <li><a class="dropdown-item" href="{% url 'inventory:new-stock' %}">Add New Stock</a></li>
+                        <li><a class="dropdown-item" href="{% url 'inventory:inventory-list' %}">Inventory List</a></li>
+<!--                        <li><a class="dropdown-item" href="{% url 'inventory:new-inventory' %}">Add New Stock</a></li>-->
                         <li><a class="dropdown-item" href="{% url 'inventory:product-list' %}" >Product List</a></li>
                         <li><a class="dropdown-item" href="{% url 'inventory:new-product' %}" >Add New Item </a></li>
 
@@ -49,8 +49,10 @@
                         Customer
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown2">
-                        <li><a class="dropdown-item" href="{% url 'inventory:customer-list' %}">Customer List</a></li>
-                        <li><a class="dropdown-item" href="{% url 'inventory:new-customer' %}">Add New Customer</a></li>
+                        <li><a class="dropdown-item" href="{% url 'sales:customer-list' %}">Customer List</a></li>
+                        <li><a class="dropdown-item" href="{% url 'sales:new-customer' %}">Add New Customer</a></li>
+                        <li><a class="dropdown-item" href="{% url 'sales:customer-books-list' %}">Customer Book</a></li>
+
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
@@ -66,13 +68,13 @@
                         Orders
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown3">
-                        <li><a class="dropdown-item" href="{% url 'inventory:purchase-bill-list' %}">Purchase bill List</a></li>
-                        <li><a class="dropdown-item" href="{% url 'inventory:new-purchase' %}">Add New Purchase</a></li>
+                        <li><a class="dropdown-item" href="{% url 'purchase:purchase-bill-list' %}">Purchase bill List</a></li>
+                        <li><a class="dropdown-item" href="{% url 'purchase:new-purchase' %}">Add New Purchase</a></li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        <li><a class="dropdown-item" href="{% url 'inventory:sales-bill-list' %}">Sale bill List</a></li>
-                        <li><a class="dropdown-item" href="{% url 'inventory:new-sales' %}">New Outgoing Stock</a></li>
+                        <li><a class="dropdown-item" href="{% url 'sales:sales-bill-list' %}">Sale bill List</a></li>
+                        <li><a class="dropdown-item" href="{% url 'sales:new-sales' %}">Add New Sale </a></li>
 
                     </ul>
                 </li>
@@ -90,8 +92,10 @@
                         Vendor
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown4">
-                        <li><a class="dropdown-item" href="{% url 'inventory:supplier-list' %}">Supplier List</a></li>
-                        <li><a class="dropdown-item" href="{% url 'inventory:new-supplier' %}">Add New Supplier</a></li>
+                        <li><a class="dropdown-item" href="{% url 'purchase:supplier-list' %}">Supplier List</a></li>
+                        <li><a class="dropdown-item" href="{% url 'purchase:new-supplier' %}">Add New Supplier</a></li>
+                        <li><a class="dropdown-item" href="{% url 'purchase:supplier-books-list' %}">Supplier Book</a></li>
+
                     </ul>
                 </li>
                  <li class="nav-item dropdown">
@@ -107,9 +111,8 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown6">
                         <li><a class="dropdown-item" href="{% url 'inventory:purchases-reqd-list' %}">Purchase Required</a></li>
-                        <li><a class="dropdown-item" href="{% url 'inventory:archive_month' 2022 01 %}">Purchase Monthly</a></li>
-                        <li><a class="dropdown-item" href="">Purchase Yearly</a></li>
-                        <li><a class="dropdown-item" href="">Sales Monthly</a></li>
+                        <li><a class="dropdown-item" href="{% url 'purchase:purchase-invoice-archive' %}">All Purchases</a></li>
+                        <li><a class="dropdown-item" href="{% url 'sales:sales-invoice-archive' %}">All Sales</a></li>
 
                     </ul>
                 </li>
@@ -118,7 +121,7 @@
 
             <form class="d-flex">
                 <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-success" type="submit">Search</button>
+                <button class="btn btn-outline-light" type="submit">Search</button>
             </form>
             <div class="navbar-nav">
                 <div class="nav-item text-nowrap">

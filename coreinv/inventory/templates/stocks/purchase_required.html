@@ -2,10 +2,18 @@
 {% block title %} Purchase Required List {% endblock title %}
 {% block content %}
 
-<h3 style="color:green; font-style: bold;">Purchase Required Item List</h3>
-<div class="float-end mb-2">
-    <a class="btn btn-info" href="{% url 'inventory:new-purchase' %}">Add New Purchase</a>
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom ">
+    <h1 class="h2">Purchase Required Item List </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{% url 'purchase:new-purchase' %}">
+                <button type="button" class="btn btn-info">Add New Purchase</button>
+            </a>
+        </div>
+    </div>
 </div>
+
+
 {% if object_list %}
 <table class="table table-hover table-sm mt-5">
     <thead class="table-light">
@@ -29,7 +37,7 @@
         <td>{{ stock.product.salse_price_with_gst|floatformat:2 }}</td>
         <td>{{ stock.product.purchase_price_with_gst|floatformat:2 }}</td>
         <td>{{ stock.product.unit }}</td>
-        <td>{{ stock.quantity }}</td>
+        <td>{{ stock.current_stock }}</td>
         <td>{{ stock.alert_level }}</td>
         <td><strong>{{ stock.purchase_reqd_qty }}</strong></td>
 

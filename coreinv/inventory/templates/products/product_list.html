@@ -25,8 +25,9 @@
         <th>Profit Margin %</th>
         <th>Purchase Price with GST</th>
         <th>Sales Price with GST</th>
-        <th>Record Level</th>
-        <th>Product Stock</th>
+        <th>Sales Price without GST</th>
+        <th>Alert Level</th>
+        <th>Current Stock</th>
         <th></th>
     </tr>
     </thead>
@@ -41,8 +42,10 @@
          <td>{{ product.profit_margin_percentage}}</td>
         <td>{{ product.purchase_price_with_gst|floatformat:2 }}</td>
         <td>{{ product.salse_price_with_gst|floatformat:2 }}</td>
-        <td>{{ product.stock.alert_level }}</td>
-        <td>{{ product.stock.quantity }}</td>
+        <td>{{ product.salse_price_without_gst|floatformat:2 }}</td>
+
+        <td>{{ product.inventory.alert_level }}</td>
+        <td>{{ product.inventory.current_stock }}</td>
         <td>
             <a href="{% url 'inventory:edit-product' product.pk %}" class="btn btn-primary btn-sm">Edit</a>
             <a href="{% url 'inventory:delete-product' product.pk %}" class="btn btn-danger btn-sm"> Delete </a>
@@ -130,21 +133,8 @@ $('#productDeleteModal').on('show.bs.modal', function (event) {
 	modal.find('.product-name').html(product_name)
 })
 
-$(document).ready( function () {
-	$('#product-table').DataTable({
-		"order": [],
-		"columnDefs": [ {
-			"targets": 4,
-			"sortable": false,
-			"searchable": false
-		},
-		{
-			"targets": 5,
-			"sortable": false,
-			"searchable": false
-		} ],
-		"paging": true
-	});
+$(document).ready(function() {
+$('#product-table').DataTable({searching: true, paging: true, info: false});
 });
 
 </script>

@@ -3,9 +3,23 @@
 {% load humanize %}
 {% block title %}HistoricalData List{% endblock %}
 {% block content %}
-{% if historicaldata_list %}
 
-<h4 class="text-center mt-3 alert alert-success ">HistoricalData List</h4>
+
+<h4 class="">HistoricalData List</h4>
+
+
+
+<form action="{% url 'stocks:stock_hist_search' %}" method="get">
+    {% csrf_token %}
+    {{form.as_p}}
+    <div class="row g-3">
+
+        <div class="col-md-6">
+            <input type="submit" value="Submit" class="btn  btn-primary">
+        </div>
+    </div>
+</form>
+
 
 <table id="historicaldata-list-table" class="table table-hover table-sm">
     <thead class="table-light">
@@ -42,9 +56,6 @@
     </tbody>
 </table>
 
-{% else %}
-<p>No stocks are available.</p>
-{% endif %}
 
 <div class="pagination">
     <span class="step-links">

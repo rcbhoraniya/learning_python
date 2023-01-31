@@ -17,6 +17,28 @@
 <h5>52 Week High: {{stock_hist.0.year_high}}, Date:{{stock_hist.0.year_high_date|date:'d-m-Y'}}</h5>
 <h5>52 Week Low: {{stock_hist.0.year_low}}, Date:{{stock_hist.0.year_low_date|date:'d-m-Y'}} </h5>
 
+<form action="{% url 'stocks:historicaldata' stock_hist.0.company.id %}" >
+    {% csrf_token %}
+    <div class="row g-3">
+        <div class="col-md-2">
+            <select class="form-control form-select form-inline mb-3" aria-label="Default select example" name="search">
+                <option selected>Select Chart</option>
+                <option value="1_year_chart">1 Year Chart</option>
+                <option value="2_year_chart">2 Year Chart</option>
+                <option value="3_year_chart">3 Year Chart</option>
+                <option value="4_year_chart">4 Year Chart</option>
+                <option value="5_year_chart">5 Year Chart</option>
+                <option value="10_year_chart">10 Year Chart</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <input type="submit" value="Submit" class="btn  btn-primary">
+        </div>
+    </div>
+</form>
+
+
+
 <canvas class="my-4 chartjs-render-monitor" id="myChart" width="355" height="149" style="display: block; width: 355px; height: 149px;"></canvas>
 <!--<canvas id="myChart" width="1200" height="600"></canvas>-->
 
@@ -43,7 +65,7 @@
     <tr>
         <th>{{forloop.counter}}</th>
         <td>{{stock.date|date:'d-m-Y H:i:s'}}</td>
-        <td>{{stock.company.company_name}}</td>
+        <td>{{stock.company.name}}</td>
         <td>{{stock.open|floatformat:2|intcomma}}</td>
         <td>{{stock.high|floatformat:2|intcomma}}</td>
         <td>{{stock.low|floatformat:2|intcomma}}</td>

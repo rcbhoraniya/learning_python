@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %} Delete Stock {% endblock title %}
+{% block content %}
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Delete Stock</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p> Are you sure you want to delete Inventory item id: <strong>{{ object.id }}</strong></p>
+                <p> and Inventory name: <strong>{{ object.product }}</strong> ?</p>
+            </div>
+            <div class="modal-footer">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Yes,Delete</button>
+                    <a href="{% url 'inventory:inventory-list' %}" class="btn btn-primary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--<form method="post">-->
+<!--    {% csrf_token %}-->
+<!--    <h3 style="color:green; font-style: bold;">Delete Stock</h3>-->
+<!--        <h5>Are you sure you want to delete the Inventory item "{{ object.product }}"?</h5>-->
+
+<!--    <div class="form-group">-->
+<!--        <button type="submit" class="btn btn-danger">Yes, Delete</button>-->
+<!--        <a href="{% url 'inventory:inventory-list' %}" class="btn btn-info">Cancel</a>-->
+<!--    </div>-->
+
+<!--</form>-->
+
+{% endblock content %}
+
+{% block includejs %}
+<script type="text/javascript">
+   $(window).on('load', function() {
+        $('#myModal').modal('show');
+    });
+</script>
+{% endblock %}
+
+

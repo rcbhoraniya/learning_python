@@ -1,67 +1,80 @@
-   {% load bootstrap_icons %}
-    <nav class="navbar navbar-expand-lg navbar-dark bg-success sticky-top" >
-  <div class="container-fluid">
-    <a class="navbar-brand" href="{% url 'stocks:index'%}">{% bs_icon 'house-door' size='1.2em' color='white' %}Portfolio</a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-<!--        <li class="nav-item">-->
-<!--          <a class="nav-link active" aria-current="page" href="{% url 'stocks:bulk_create_bhavcopy'%}">BhavcopyUpdate</a>-->
-<!--        </li>-->
-<!--&lt;!&ndash;        <li class="nav-item">&ndash;&gt;-->
-<!--          <a class="nav-link active" aria-current="page" href="{% url 'stocks:bulk_create_stockdata'%}">StockDataUpdate</a>-->
-<!--        </li>-->
-          <li class="nav-item dropdown">
-          <a class="nav-link active dropdown-toggle" href="#" id="navbarDropdown1" role="button" data-bs-toggle="dropdown" aria-expanded="false">List</a>
-          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item" href="{% url 'stocks:sector_list'%}">SectorList</a></li>
-              <li><a class="dropdown-item" href="{% url 'stocks:stockmap_list'%}">StockMapList</a></li>
-              <li><a class="dropdown-item" href="{% url 'stocks:stockdata_list'%}">StockDataList</a></li>
-              <li><a class="dropdown-item" href="{% url 'stocks:historicaldata_list'%}">HistoricalDataList</a></li>
-              <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Something else here</a></li>
-          </ul>
-        </li>
-          <li class="nav-item dropdown">
-          <a class="nav-link active dropdown-toggle" href="#" id="navbarDropdown2" role="button" data-bs-toggle="dropdown" aria-expanded="false">Add</a>
-          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item" href="{% url 'stocks:sector_add'%}">AddSector</a></li>
-            <li><a class="dropdown-item" href="{% url 'stocks:stockmap_add'%}">AddStockMap</a></li>
-            <li><a class="dropdown-item" href="{% url 'stocks:stockdata_add'%}">AddStockData</a></li>
-            <li><a class="dropdown-item" href="{% url 'stocks:historicaldata_add'%}">AddHistoricalData</a></li>
-          </ul>
-        </li>
+<nav class="navbar navbar-expand-lg py-md-3 navbar-dark sticky-top" style="background-color: #6f42c1;"  >
+    <div class="container-fluid">
+        <a class="navbar-brand " href="{% url 'stocks:index'%}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                 class="feather feather-home" aria-hidden="true">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            Portfolio</a>
 
-           <li class="nav-item dropdown">
-          <a class="nav-link active dropdown-toggle" href="#" id="navbarDropdown3" role="button" data-bs-toggle="dropdown" aria-expanded="false">Update</a>
-          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item" href="{% url 'stocks:bulk_create_historicaldata'%}">HistoricalDataUpdate</a></li>
-              <li><a class="dropdown-item" href="{% url 'stocks:bulk_create_nsehist'%}">NSEHistoricalUpdate</a></li>
-              <li><a class="dropdown-item" href="{% url 'stocks:bulk_create_bhavcopy'%}">BhavcopyUpdate</a></li>
-              <li><a class="dropdown-item" href="{% url 'stocks:bulk_create_stockdata'%}">StockDataUpdate</a></li>
-          </ul>
-        <li class="nav-item dropdown">
-          <a class="nav-link active dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Sector Detail
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item" href="{% url 'stocks:sector_analysis'%}">Sector</a></li>
-              <li><a class="dropdown-item" href="{% url 'stocks:marketcap_analysis'%}">MarketCap</a></li>
-              <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Something else here</a></li>
-          </ul>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item dropdown">
+                    <a class="nav-link active dropdown-toggle" href="#" id="navbarDropdown1" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">List</a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="{% url 'stocks:sector_list'%}">SectorList</a></li>
+                        <li><a class="dropdown-item" href="{% url 'stocks:stockmap_list'%}">StockMapList</a></li>
+                        <li><a class="dropdown-item" href="{% url 'stocks:stockdata_list'%}">StockDataList</a></li>
+                        <li><a class="dropdown-item" href="{% url 'stocks:historicaldata_list'%}">HistoricalDataList</a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="#">Something else here</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link active dropdown-toggle" href="#" id="navbarDropdown2" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">Add</a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="{% url 'stocks:sector_add'%}">AddSector</a></li>
+                        <li><a class="dropdown-item" href="{% url 'stocks:stockmap_add'%}">AddStockMap</a></li>
+                        <li><a class="dropdown-item" href="{% url 'stocks:stockdata_add'%}">AddStockData</a></li>
+                        <li><a class="dropdown-item" href="{% url 'stocks:historicaldata_add'%}">AddHistoricalData</a>
+                        </li>
+                    </ul>
+                </li>
 
-        </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link active dropdown-toggle" href="#" id="navbarDropdown3" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">Update</a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="{% url 'stocks:bulk_create_historicaldata'%}">HistoricalDataUpdate</a>
+                        </li>
 
-      </ul>
-      <form class="d-flex">
-        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-        <button class="btn btn-outline-light" type="submit">Search</button>
-      </form>
-        <div class="navbar-nav">
+                        <li><a class="dropdown-item" href="{% url 'stocks:bulk_create_stockdata'%}">StockDataUpdate</a>
+                        </li>
+                    </ul>
+                <li class="nav-item dropdown">
+                    <a class="nav-link active dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        Sector Detail
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="{% url 'stocks:sector_analysis'%}">Sector</a></li>
+                        <li><a class="dropdown-item" href="{% url 'stocks:marketcap_analysis'%}">MarketCap</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="#">Something else here</a></li>
+                    </ul>
+
+                </li>
+
+            </ul>
+            <form class="d-flex">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-light" type="submit">Search</button>
+            </form>
+            <div class="navbar-nav">
                 <div class="nav-item text-nowrap">
                     <li class="nav-item dropdown">
                         <a class="nav-link active dropdown-toggle" href="#" id="navbarDropdown5" role="button"
@@ -90,6 +103,6 @@
                     </li>
                 </div>
             </div>
+        </div>
     </div>
-  </div>
 </nav>

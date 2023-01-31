@@ -7,7 +7,7 @@
 <a class="btn btn-sm btn-secondary mt-2" href="{% url 'stocks:exportcsv' %}">Downloads</a>
 <a class="btn btn-sm btn-secondary mt-2" href="{% url 'stocks:refresh_price' %}">Refresh</a>
 
-<h5 class="text-center mt-1 " style="color: green">Portfolio Summary on Dated: {{stock_list.0.date|date:'d/m/Y'}}</h5>
+<h5 class="text-center mt-1 " >Portfolio Summary on Dated: {{stock_list.0.date|date:'d/m/Y'}}</h5>
 <ul class="list ">
     <li>
         Total Investment : Rs. {{stock_list.0.total_investment|floatformat:2|intcomma}}
@@ -51,7 +51,7 @@
 <table id="index-table" class="table table-hover table-sm">
     <thead class="table-light">
     <tr>
-        <th>#</th>
+        <th scope="col">#</th>
         <th>Company Name</th>
         <th>NSE Symbol</th>
         <th>Sector</th>
@@ -64,7 +64,7 @@
         <th>Protfolio weight %</th>
         <th>Profit %</th>
         <th>Close price {{stock_list.0.date|date:'d-m-Y'}}</th>
-        <th>Year High %</th>
+        <th>Year High</th>
         <th>Year Low</th>
         <th>Price Down %</th>
         <th>Change</th>
@@ -73,26 +73,26 @@
     </thead>
     <tbody>
     {% for stock in stock_list %}
-    <tr>
+    <tr >
         <th>{{forloop.counter}}</th>
-        <td><a class="text-decoration-none link-success" href="{% url 'stocks:portfolio_detail' stock.id %}">
+        <td><a class="text-decoration-none link-primary" href="{% url 'stocks:portfolio_detail' stock.id %}">
             {{stock.name|title}}</a></td>
         <td><a class="text-decoration-none" href="{% url 'stocks:historicaldata' stock.id %}">
             {{stock.nse_symbol }}</a></td>
         <td>{{stock.sector.sector}}</td>
-        <td>{{stock.m_cap.name}}</td>
+        <td>{{stock.m_cap.m_cap_name}}</td>
         <td>{{stock.qty_sum}}</td>
         <td>{{stock.price_sum|floatformat:2|intcomma}}</td>
         <td>{{stock.average_price|floatformat:2|intcomma}}</td>
         <td>{{stock.today_value|intcomma}}</td>
-        <td>{{stock.profit|floatformat:2}}</td>
+        <td style="{% if stock.profit < 0 %} color:red {% else %}color:green{%endif%}">{{stock.profit|floatformat:2}}</td>
         <td>{{stock.portweight|floatformat:2}}%</td>
         <td>{{stock.profit_percentage|floatformat:2}}%</td>
         <td>{{stock.close|intcomma}}</td>
         <td>{{stock.w52_high|floatformat:2|intcomma}}</td>
         <td>{{stock.w52_low|floatformat:2|intcomma}}</td>
         <td>{{stock.per_down|floatformat:2|intcomma}}%</td>
-        <td>{{stock.change|floatformat:2|intcomma}}</td>
+        <td style="{% if stock.change < 0 %} color:red {% else %}color:green{%endif%}">{{stock.change|floatformat:2|intcomma}}</td>
         <td>{{stock.pchange|floatformat:2|intcomma}}%</td>
     </tr>
     {% endfor %}

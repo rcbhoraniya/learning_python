@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %} Inventory List {% endblock title %}
+{% block content %}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom ">
+    <h1 class="h2">Inventory Item </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+
+    </div>
+</div>
+
+   {% if object_list %}
+<table class="table table-hover table-sm mt-5">
+    <thead class="table-light">
+    <tr>
+        <th>Stock Name</th>
+        <th>HSN No</th>
+        <th>Sales Price with GST</th>
+         <th>Purchase Price with GST</th>
+        <th>Current Stock in Inventory</th>
+         <th>Inventory Alert Level</th>
+        <th>Options</th>
+    </tr>
+    </thead>
+
+
+
+    <tbody>
+    {% for stock in object_list %}
+    <tr onclick="window.location='{% url 'inventory:inventory-log' stock.product %}';">
+        <td><a href="{% url 'inventory:inventory-log' stock.product%}" > {{ stock.product }} </a></td>
+                <td>{{ stock.product.hsn }}</td>
+        <td>{{ stock.product.salse_price_with_gst|floatformat:2 }}</td>
+        <td>{{ stock.product.purchase_price_with_gst|floatformat:2 }}</td>
+        <td>{{ stock.current_stock }}</td>
+        <td>{{ stock.alert_level }}</td>
+        <td>
+            <a href="{% url 'inventory:edit-inventory' stock.pk %}" class="btn btn-primary btn-sm">Edit</a>
+            <a href="{% url 'inventory:delete-inventory' stock.pk %}" class="btn btn-danger btn-sm">Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<!--Pagination-->
+<div class="pagination justify-content-center">
+
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+{% else %}
+    <div style="color: green; font-style: bold; font-size: 1.5rem; text-align: center;">WOW, SUCH EMPTY</div>
+{% endif %}
+
+{% endblock content %}

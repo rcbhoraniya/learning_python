@@ -29,7 +29,11 @@
     {% for stock in stockmap_list %}
     <tr>
         <th>{{forloop.counter}}</th>
-        <td>{{stock.name}}</td>
+
+
+        <td><a class="text-decoration-none link-primary" href="{% url 'stocks:portfolio_detail' stock.id %}">
+            {{stock.name}}</a></td>
+
         <td>{{stock.nse_symbol }}</td>
         <td>{{stock.sector}}</td>
         <td>{{stock.m_cap}}</td>

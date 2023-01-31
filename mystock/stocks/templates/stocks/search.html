@@ -27,7 +27,7 @@
             <tr>
                 <th>{{forloop.counter}}</th>
                 <td>{{stock.nse_symbol}}</td>
-                <td><a class="text-decoration-none link-success" href="{% url 'stocks:historicaldata' stock.id %}">{{ stock.company_name }}</a></td>
+                <td><a class="text-decoration-none link-success" href="{% url 'stocks:historicaldata' stock.id %}">{{ stock.name }}</a></td>
                 <td>{{stock.max_close}}</td>
                 <td>{{stock.max_date|date:'d-m-Y'}}</td>
                 <td>{{stock.min_close}}</td>

@@ -4,8 +4,7 @@ import pandas as pd
 import numpy as np
 import requests as r
 import openpyxl
-from nsepy import get_history
-from nsepy.history import get_price_list
+
 from django.db.models.functions import Cast
 # from django.http import HttpResponseRedirect
 # from django.urls import reverse_lazy
@@ -33,6 +32,14 @@ MARKET_CLOSE_DATETIME = pd.to_datetime(TODAY_S)
 pd.set_option('display.width', 1500)
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 50)
+
+proxy_host = "10.72.44.45"
+proxy_port = "808"
+proxy_auth = "wtrmrb:wtrmrb"
+PROXIES = {
+    "https": "https://{}@{}:{}/".format(proxy_auth, proxy_host, proxy_port),
+    "http": "http://{}@{}:{}/".format(proxy_auth, proxy_host, proxy_port)
+}
 
 
 class PermissionDeniedView(TemplateView):
@@ -80,27 +87,28 @@ class IndexView(UserAccessMixin, ListView):
         stockdata_subqs = StockData.objects.filter(company=OuterRef("pk")).filter(
             company__is_portfolio_stock=True).values(
             'company').annotate(qty_sum=Sum(F('quantity') * F('side')),
-                                price_sum=Sum(F('price') * F('side') * F('quantity')),
-                                average_price=Sum(F('price') * F('side') * F('quantity')) / Sum(
-                                    F('quantity') * F('side')))
-        nsedata_subqs = NSEData.objects.filter(symbol=OuterRef("pk"))
+                                               price_sum=Sum(F('price') * F('side') * F('quantity')),
+                                               average_price=Sum(F('price') * F('side') * F('quantity')) / Sum(
+                                                   F('quantity') * F('side')))
+        nsedata_subqs = NSEBhavcopy.objects.filter(symbol=OuterRef("pk"))
 
         data = StockMap.objects.filter(is_portfolio_stock=True).annotate(
             qty_sum=Subquery(stockdata_subqs.values('qty_sum')),
             price_sum=Subquery(stockdata_subqs.values('price_sum')[:1]),
             average_price=Subquery(stockdata_subqs.values('average_price')[:1]),
-            close=Subquery(nsedata_subqs.values('lastprice')[:1]),
+            close=Subquery(nsedata_subqs.values('close')[:1]),
             date=Subquery(nsedata_subqs.values('date')[:1]),
-            w52_high=Subquery(nsedata_subqs.values('yearhigh')[:1]),
-            w52_low=Subquery(nsedata_subqs.values('yearlow')[:1]),
+            w52_high=Subquery(nsedata_subqs.values('w52_high')[:1]),
+            w52_low=Subquery(nsedata_subqs.values('w52_low')[:1]),
             change=Subquery(nsedata_subqs.values('change')[:1]),
-            pchange=Subquery(nsedata_subqs.values('pchange')[:1]),
+            pchange=Subquery(nsedata_subqs.values('perchange')[:1]),
             per_down=F('close') * 100 / F('w52_high') - 100,
             today_value=F('close') * F('qty_sum'),
             profit=F('today_value') - F('price_sum')
         ).order_by('name')
         # for item in data:
         #     print(item.name,item.profit)
+        # print(data)
         total_investment = 0
         profit_sum = 0
 
@@ -114,11 +122,11 @@ class IndexView(UserAccessMixin, ListView):
         data = data.annotate(portweight=F('price_sum') * 100 / F('total_investment'),
                              profit_percentage=F('today_value') * 100 / F('price_sum') - 100,
                              port_per_up=F('profit_sum') * 100 / F('total_investment'))
-        # print(data)
+        # print(data[0].id,data[0].name)
         return data
 
 
-class SectorStockListView(UserAccessMixin, ListView):  ################
+class SectorStockListView(UserAccessMixin, ListView):
     permission_required = ('stocks.view_stockmap',)
 
     template_name = 'portfolio/index.html'
@@ -132,18 +140,18 @@ class SectorStockListView(UserAccessMixin, ListView):  ################
                                 price_sum=Sum(F('price') * F('side') * F('quantity')),
                                 average_price=Sum(F('price') * F('side') * F('quantity')) / Sum(
                                     F('quantity') * F('side')))
-        nsedata_subqs = NSEData.objects.filter(symbol=OuterRef("pk"))
+        nsedata_subqs = NSEBhavcopy.objects.filter(symbol=OuterRef("pk"))
 
-        data = StockMap.objects.filter(is_portfolio_stock=True).filter(sector__sector =self.kwargs['sector'] ).annotate(
+        data = StockMap.objects.filter(is_portfolio_stock=True).filter(sector__sector=self.kwargs['sector']).annotate(
             qty_sum=Subquery(stockdata_subqs.values('qty_sum')),
             price_sum=Subquery(stockdata_subqs.values('price_sum')[:1]),
             average_price=Subquery(stockdata_subqs.values('average_price')[:1]),
-            close=Subquery(nsedata_subqs.values('lastprice')[:1]),
+            close=Subquery(nsedata_subqs.values('close')[:1]),
             date=Subquery(nsedata_subqs.values('date')[:1]),
-            w52_high=Subquery(nsedata_subqs.values('yearhigh')[:1]),
-            w52_low=Subquery(nsedata_subqs.values('yearlow')[:1]),
+            w52_high=Subquery(nsedata_subqs.values('w52_high')[:1]),
+            w52_low=Subquery(nsedata_subqs.values('w52_low')[:1]),
             change=Subquery(nsedata_subqs.values('change')[:1]),
-            pchange=Subquery(nsedata_subqs.values('pchange')[:1]),
+            pchange=Subquery(nsedata_subqs.values('perchange')[:1]),
             per_down=F('close') * 100 / F('w52_high') - 100,
             today_value=F('close') * F('qty_sum'),
             profit=F('today_value') - F('price_sum')
@@ -177,12 +185,27 @@ class StockDetailView(UserAccessMixin, ListView):
     model = StockMap
     template_name = 'stocks/portfolio_stock_detail.html'
     context_object_name = 'stock_list'
+    year = 1
 
-    def get_queryset(self):
-        start_date = TODAY_DATE - timedelta(days=365)
+    def get_queryset(self, ):
+        search_text = self.request.GET.get('search')
+        if search_text == '1_year_chart':
+            self.year = 1
+        elif search_text == '2_year_chart':
+            self.year = 2
+        elif search_text == '3_year_chart':
+            self.year = 3
+        elif search_text == '4_year_chart':
+            self.year = 4
+        elif search_text == '5_year_chart':
+            self.year = 5
+        elif search_text == '10_year_chart':
+            self.year = 10
+
+        start_date = TODAY_DATE - timedelta(days=365 * self.year)
 
         self.stockmap = get_object_or_404(StockMap, id=self.kwargs['pk'])
-        nse_data = NSEData.objects.filter(symbol=self.stockmap).first()
+        nse_data = NSEBhavcopy.objects.filter(symbol=self.stockmap).first()
         # print(nse_data.date)
         hist_data = HistoricalData.objects.filter(Q(company=self.stockmap) & Q(date__gte=start_date)).order_by('date')
         year_avg = hist_data.aggregate(Avg('close'))
@@ -211,33 +234,33 @@ class StockDetailView(UserAccessMixin, ListView):
         r2 = pivot + h_l * 618 / 1000
         r3 = pivot + h_l * 1
 
-        maximum_price = historical_data.order_by('-close').first()
-        minimum_price = historical_data.order_by('close').first()
-        difference = maximum_price.close - minimum_price.close
-        first_level = maximum_price.close - difference * 236 / 1000
-        second_level = maximum_price.close - difference * 382 / 1000
-        third_level = maximum_price.close - difference * 5 / 10
-        fourth_level = maximum_price.close - difference * 618 / 1000
+        maximum_price = historical_data.order_by('-high').first()
+        minimum_price = historical_data.order_by('low').first()
+        difference = maximum_price.high - minimum_price.low
+        first_level = maximum_price.high - difference * 236 / 1000
+        second_level = maximum_price.high - difference * 382 / 1000
+        third_level = maximum_price.high - difference * 5 / 10
+        fourth_level = maximum_price.high - difference * 618 / 1000
 
         queryset = StockData.objects.filter(company=self.stockmap).values(
             'company__name', 'company').annotate(
             qty_sum=Sum(F('quantity') * F('side')),
             price_sum=Sum(F('price') * F('side') * F('quantity')),
             average_price=Sum(F('price') * F('side') * F('quantity')) / Sum(F('quantity') * F('side')),
-            today_value=Sum(F('quantity') * F('side') * nse_data.lastprice),
-            profit=Sum(F('quantity') * F('side')) * nse_data.lastprice - Sum(F('price') * F('side') * F('quantity')),
-            close=Value(nse_data.lastprice, output_field=DecimalField(max_digits=12, decimal_places=2)),
+            today_value=Sum(F('quantity') * F('side') * nse_data.close),
+            profit=Sum(F('quantity') * F('side')) * nse_data.close - Sum(F('price') * F('side') * F('quantity')),
+            close=Value(nse_data.close, output_field=DecimalField(max_digits=12, decimal_places=2)),
             date=Value(nse_data.date, output_field=DateTimeField()),
-            w52_high=Value(nse_data.yearhigh, output_field=DecimalField(max_digits=12, decimal_places=2)),
-            w52_low=Value(nse_data.yearlow, output_field=DecimalField(max_digits=12, decimal_places=2)),
+            w52_high=Value(nse_data.w52_high, output_field=DecimalField(max_digits=12, decimal_places=2)),
+            w52_low=Value(nse_data.w52_low, output_field=DecimalField(max_digits=12, decimal_places=2)),
             per_down=F('close') * 100 / F('w52_high') - 100,
             w52_avg=Value(year_avg['close__avg'], output_field=DecimalField(max_digits=12, decimal_places=2)),
             profit_percentage=F('today_value') * 100 / F('price_sum') - 100,
-            corporate_action=Value(nse_data.corporate_action, output_field=CharField(max_length=100)),
-            x_date=Value(nse_data.x_date, output_field=DateTimeField()),
-            year_high=Value(maximum_price.close, output_field=DecimalField(max_digits=12, decimal_places=2)),
+            # corporate_action=Value(nse_data.corporate_action, output_field=CharField(max_length=100)),
+            # x_date=Value(nse_data.x_date, output_field=DateTimeField()),
+            year_high=Value(maximum_price.high, output_field=DecimalField(max_digits=12, decimal_places=2)),
             year_high_date=Value(maximum_price.date, output_field=DateTimeField()),
-            year_low=Value(minimum_price.close, output_field=DecimalField(max_digits=12, decimal_places=2)),
+            year_low=Value(minimum_price.low, output_field=DecimalField(max_digits=12, decimal_places=2)),
             year_low_date=Value(minimum_price.date, output_field=DateTimeField()),
             first_level=Value(first_level, output_field=DecimalField(max_digits=12, decimal_places=2)),
             second_level=Value(second_level, output_field=DecimalField(max_digits=12, decimal_places=2)),
@@ -259,24 +282,24 @@ class StockDetailView(UserAccessMixin, ListView):
         return queryset
 
     def get_context_data(self, **kwargs):
-        end_date = TODAY_DATE - timedelta(days=365)
+        end_date = TODAY_DATE - timedelta(days=365 * self.year)
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
 
         queryset = HistoricalData.objects.filter(
             Q(company=self.kwargs['pk']) & Q(date__range=(end_date, TODAY_DATE))).order_by(
             'date')
-        maximum_price = queryset.order_by('-close').first()
-        minimum_price = queryset.order_by('close').first()
-        difference = maximum_price.close - minimum_price.close
-        first_level = maximum_price.close - difference * 236 / 1000
-        second_level = maximum_price.close - difference * 382 / 1000
-        third_level = maximum_price.close - difference * 5 / 10
-        fourth_level = maximum_price.close - difference * 618 / 1000
+        maximum_price = queryset.order_by('-high').first()
+        minimum_price = queryset.order_by('low').first()
+        difference = maximum_price.high - minimum_price.low
+        first_level = maximum_price.high - difference * 236 / 1000
+        second_level = maximum_price.high - difference * 382 / 1000
+        third_level = maximum_price.high - difference * 5 / 10
+        fourth_level = maximum_price.high - difference * 618 / 1000
         data = queryset.annotate(
-            year_high=Value(maximum_price.close, output_field=DecimalField(max_digits=12, decimal_places=2)),
+            year_high=Value(maximum_price.high, output_field=DecimalField(max_digits=12, decimal_places=2)),
             year_high_date=Value(maximum_price.date, output_field=DateTimeField()),
-            year_low=Value(minimum_price.close, output_field=DecimalField(max_digits=12, decimal_places=2)),
+            year_low=Value(minimum_price.low, output_field=DecimalField(max_digits=12, decimal_places=2)),
             year_low_date=Value(minimum_price.date, output_field=DateTimeField()),
             first_level=Value(first_level, output_field=DecimalField(max_digits=12, decimal_places=2)),
             second_level=Value(second_level, output_field=DecimalField(max_digits=12, decimal_places=2)),
@@ -298,25 +321,41 @@ class HistoricalDataView(UserAccessMixin, ListView):
 
     template_name = 'stocks/portfolio_stock_history.html'
     context_object_name = 'stock_hist'
+    year = 1
 
     # paginate_by = 20
 
     def get_queryset(self):
-        end_date = TODAY_DATE - timedelta(days=365)
+
+        search_text = self.request.GET.get('search')
+        if search_text == '1_year_chart':
+            self.year = 1
+        elif search_text == '2_year_chart':
+            self.year = 2
+        elif search_text == '3_year_chart':
+            self.year = 3
+        elif search_text == '4_year_chart':
+            self.year = 4
+        elif search_text == '5_year_chart':
+            self.year = 5
+        elif search_text == '10_year_chart':
+            self.year = 10
+
+        end_date = TODAY_DATE - timedelta(days=365 * self.year)
         queryset = HistoricalData.objects.filter(
             Q(company=self.kwargs['pk']) & Q(date__range=(end_date, TODAY_DATE))).order_by(
             'date')
-        maximum_price = queryset.order_by('-close').first()
-        minimum_price = queryset.order_by('close').first()
-        difference = maximum_price.close - minimum_price.close
-        first_level = maximum_price.close - difference * 236 / 1000
-        second_level = maximum_price.close - difference * 382 / 1000
-        third_level = maximum_price.close - difference * 5 / 10
-        fourth_level = maximum_price.close - difference * 618 / 1000
+        maximum_price = queryset.order_by('-high').first()
+        minimum_price = queryset.order_by('low').first()
+        difference = maximum_price.high - minimum_price.low
+        first_level = maximum_price.high - difference * 236 / 1000
+        second_level = maximum_price.high - difference * 382 / 1000
+        third_level = maximum_price.high - difference * 5 / 10
+        fourth_level = maximum_price.high - difference * 618 / 1000
         data = queryset.annotate(
-            year_high=Value(maximum_price.close, output_field=DecimalField(max_digits=12, decimal_places=2)),
+            year_high=Value(maximum_price.high, output_field=DecimalField(max_digits=12, decimal_places=2)),
             year_high_date=Value(maximum_price.date, output_field=DateTimeField()),
-            year_low=Value(minimum_price.close, output_field=DecimalField(max_digits=12, decimal_places=2)),
+            year_low=Value(minimum_price.low, output_field=DecimalField(max_digits=12, decimal_places=2)),
             year_low_date=Value(minimum_price.date, output_field=DateTimeField()),
             first_level=Value(first_level, output_field=DecimalField(max_digits=12, decimal_places=2)),
             second_level=Value(second_level, output_field=DecimalField(max_digits=12, decimal_places=2)),
@@ -392,14 +431,14 @@ class SearchView(UserAccessMixin, ListView):
     permission_required = ('stocks.view_stockmap',)
 
     template_name = 'stocks/search.html'
-    context_object_name = 'all_search_results'
+    context_object_name = 'search_results'
 
     # paginate_by = 9
 
     def get_queryset(self):
 
-        qs = self.request.GET.get('search')
-        if qs == 'new_closing_low':
+        search_text = self.request.GET.get('search')
+        if search_text == 'new_closing_low':
             qsr = HistoricalData.objects.filter(company=OuterRef("pk"))
 
             get_data365 = qsr.filter(date__gte=date.today() - timedelta(days=365))
@@ -417,9 +456,10 @@ class SearchView(UserAccessMixin, ListView):
                 low=Subquery(today_hist.values('low')[:1]),
                 high=Subquery(today_hist.values('high')[:1]),
                 date=Subquery(today_hist.values('date')[:1]),
-                avg_price=Subquery(get_avg.values('average_price')), ).filter(close__lte=F('min_close') * 1.05)
+                avg_price=Subquery(get_avg.values('average_price')), ).filter(close__lte=F('min_close') * 1.04)
+            return result
 
-        elif qs == 'new_closing_high':
+        elif search_text == 'new_closing_high':
             qsr = HistoricalData.objects.filter(company=OuterRef("pk"))
 
             get_data365 = qsr.filter(date__gte=date.today() - timedelta(days=365))
@@ -438,10 +478,13 @@ class SearchView(UserAccessMixin, ListView):
                 high=Subquery(today_hist.values('high')[:1]),
                 date=Subquery(today_hist.values('date')[:1]),
                 avg_price=Subquery(get_avg.values('average_price')), ).filter(close__gte=F('max_close') * 1.01)
+            return result
+
+
         else:
             result = StockMap.objects.order_by('name')
-        # print(result)
-        return result
+            # print(result)
+            return result
 
 
 class StockMapListView(UserAccessMixin, ListView):
@@ -587,13 +630,37 @@ class StockDataDeleteView(UserAccessMixin, DeleteView):
         return HttpResponseRedirect(success_url)
 
 
+class StockHistSearchView(ListView):
+    template_name = 'stocks/historicaldata_list.html'
+    context_object_name = 'historicaldata_list'
+
+    def get_queryset(self):
+        search_text = self.request.GET.get('name')
+        qsr = HistoricalData.objects.order_by('-date').filter(company=search_text)[:300]
+        return qsr
+
+    def get_context_data(self, **kwargs):
+        context = super(StockHistSearchView, self).get_context_data(**kwargs)
+        context['form'] = StockFilterForm()
+        return context
+
+
 class HistoricalDataListView(UserAccessMixin, ListView):
     permission_required = ('stocks.view_historicaldata',)
-
     model = HistoricalData
     template_name = 'stocks/historicaldata_list.html'
     context_object_name = 'historicaldata_list'
-    queryset = HistoricalData.objects.order_by('-date')[:100]
+    queryset = HistoricalData.objects.order_by('-date')[:300]
+
+    # def get_queryset(self):
+    #     search_text = self.request.GET.get('name')
+    #     qsr = HistoricalData.objects.order_by('-date').filter(company=search_text)[:300]
+    #     return qsr
+
+    def get_context_data(self, **kwargs):
+        context = super(HistoricalDataListView, self).get_context_data(**kwargs)
+        context['form'] = StockFilterForm()
+        return context
 
 
 class HistoricalDataDetailView(UserAccessMixin, DetailView):
@@ -635,122 +702,68 @@ class HistoricalDataDeleteView(UserAccessMixin, DeleteView):
 
 
 def refresh_price_data(request):
-    # ticker_list = StockMap.objects.filter(is_portfolio_stock=True).order_by('id').values_list('id', 'yahoo_symbol')
-    def convert_float(val):
-        return float(val)
-
-    def convert_int(val):
-        val = float(val)
-        val_n = val * 100000
-        return int(val_n)
-
-    def convert_val(val):
-        val_n = val.replace('-', ' ')
-        val_n = datetime.strptime(val_n, '%d %b %Y')
-        return val_n
-
-    def get_nse_data():
-        url = 'https://www1.nseindia.com/live_market/dynaContent/live_watch/stock_watch/nifty500StockWatch.json'
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.89 Safari/537.36',
-            "Accept-Language": 'en-US,en;q=0.9', "Accept-Encoding": 'gzip, deflate'}
-        cookie_dict = {
-            'bm_sv': 'bm_sv=B683127B319CDEE635D5372C90911E65~9bcie0JgYimO/ip/zZyr7MogxfyXlHq+Tz5Ui7Zhe2uEabg2yRXR4tGEB6fLuPo5NOfwvNh+fLoL+24U2NS/6RnomTLCaKkqrvMGVymRDeXQvV0BPqISClZsOss1CDEbSSLSCr0PBEZlCovszNGVtGObdpFqxB7xlKx'}
-
-        session = r.session()
-        dicts = session.get(url, headers=headers).json()
-        df = pd.DataFrame(dicts['data'])
-        df = df.sort_values('symbol')
-        # print(df)
-        df = df[['symbol', 'cAct', 'xDt', 'open', 'high', 'low', 'ltP', 'ptsC', 'per', 'trdVol', 'wkhi', 'wklo',
-                 'previousClose', 'dayEndClose', 'iislPtsChange', 'iislPercChange', 'yPC', 'mPC']]
-        column = ['symbol', 'c_act', 'xdt', 'open', 'high', 'low', 'ltp', 'ptsc', 'per', 'trdvol', 'wkhi', 'wklo',
-                  'previousclose', 'dayendclose', 'iislptschange', 'iislpercchange', 'ypct', 'mpct']
-        df.columns = column
-        df = df.replace('-', 0)
-        # print(df)
-        # print(df.info())
-        df = df.sort_values(by="symbol")
-        df = df.replace({',': ''}, regex=True)
-        df = df.reset_index(drop='index')
-        df['xdt'] = df['xdt'].apply(convert_val)
-        col = df.columns
-
-        for col_name in df.columns:
-            if col_name == col[0] or col_name == col[1] or col_name == col[2]:
-                continue
-            elif col_name == col[9]:
-                df[col_name] = df[col_name].apply(convert_int)
-            else:
-                df[col_name] = df[col_name].apply(convert_float)
-        df = df.round(2)
-        return df
-
-    df = get_nse_data()
-    # print(df)
-    # print(df.info())
-    ticker_list = StockMap.objects.order_by('id').values_list('id', 'nse_symbol')
+    ticker_list = StockMap.objects.filter(is_portfolio_stock=True).order_by('id').values_list('id', 'nse_symbol')
     # print(ticker_list)
-
     for i, (id, comp) in enumerate(ticker_list):
-        nsedf = df.loc[df['symbol'] == comp]
-        if nsedf.empty:
-            pass
-        else:
-            nse = nsedf.values.tolist()
-            nse = nse[0]
-            # print(nse)
-            try:
-                obj = NSEData.objects.get(symbol=id)
 
-                obj.open = nse[3]
-                obj.dayhigh = nse[4]
-                obj.daylow = nse[5]
-                obj.lastprice = nse[6]
-                obj.change = nse[7]
-                obj.pchange = nse[8]
-                obj.totaltradedvolume = nse[9]
-                obj.yearhigh = nse[10]
-                obj.yearlow = nse[11]
-                obj.previousclose = nse[12]
-                obj.perchange365d = nse[16]
-                obj.perchange30d = nse[17]
-                obj.dayendclose = nse[13]
-                obj.corporate_action = nse[1]
-                obj.x_date = nse[2]
-                obj.date = datetime.today()
-                obj.save()
-                print(obj)
-            except NSEData.DoesNotExist:
-                lastobj = NSEData(
-                    is_deleted=False,
-                    deleted_at=None,
-                    symbol=StockMap.objects.get(nse_symbol=comp),
-                    date=datetime.today(),
-                    open=nse[3],
-                    dayhigh=nse[4],
-                    daylow=nse[5],
-                    lastprice=nse[6],
-                    change=nse[7],
-                    pchange=nse[8],
-                    totaltradedvolume=nse[9],
-                    yearhigh=nse[10],
-                    yearlow=nse[11],
-                    previousclose=nse[12],
-                    perchange365d=nse[16],
-                    perchange30d=nse[17],
-                    dayendclose=nse[13],
-                    corporate_action=nse[1],
-                    x_date=nse[2]
-                )
-                lastobj.save()
-                print(lastobj)
+        end_date = TODAY_DATE - timedelta(days=365)
+        queryset = HistoricalData.objects.filter(
+            Q(company=id) & Q(date__range=(end_date, TODAY_DATE))).order_by(
+            'date')
+        maximum_price = queryset.order_by('-high').first()
+        minimum_price = queryset.order_by('low').first()
+        prv_rec = queryset.order_by('-id')[:2:-1][:1]  # get last two record
+        last_obj = queryset.last()
+        print(prv_rec)
+        change = last_obj.close - prv_rec[0].close
+        perchange = change * 100 / prv_rec[0].close
+
+        try:
+            obj = NSEBhavcopy.objects.get(symbol=last_obj.company.id)
+            obj.open = last_obj.open
+            obj.high = last_obj.high
+            obj.low = last_obj.low
+            obj.close = last_obj.close
+            obj.date = last_obj.date
+            obj.adj_close = last_obj.adj_close
+            obj.volume = last_obj.volume
+            obj.w52_high = maximum_price.high
+            obj.w52_low = minimum_price.low
+            obj.prv_day_close = prv_rec[0].close
+            obj.change = change
+            obj.perchange = perchange
+            obj.save()
+            print(obj)
+
+        except NSEBhavcopy.DoesNotExist:
+            lastobj = NSEBhavcopy(
+                is_deleted=False,
+                deleted_at=None,
+                symbol=StockMap.objects.get(nse_symbol=comp),
+                date=last_obj.date,
+                open=last_obj.open,
+                high=last_obj.high,
+                low=last_obj.low,
+                close=last_obj.close,
+                adj_close=last_obj.adj_close,
+                volume=last_obj.volume,
+                w52_high=maximum_price.high,
+                w52_low=minimum_price.low,
+                prv_day_close=prv_rec[0].close,
+                change=change,
+                perchange=perchange
+            )
+            lastobj.save()
+            print(lastobj)
+
     return redirect(reverse('stocks:index'))
 
 
 def BulkCreateHistoricalData(request):
-    ticker_list = StockMap.objects.filter(is_portfolio_stock=True).order_by('id').values_list('id', 'yahoo_symbol')
-    for i, (id, ticker) in enumerate(ticker_list):
+    # ticker_list = StockMap.objects.filter(is_deleted=False).order_by('id').values_list('id', 'yahoo_symbol')
+
+    ticker_list = StockMap.objects.filter(is_portfolio_stock=True).order_by('nse_symbol').values_list('id','nse_symbol', 'yahoo_symbol')
+    for i, (id,nse_symbol, ticker) in enumerate(ticker_list):
 
         start_date = None
         end_date = None
@@ -760,32 +773,28 @@ def BulkCreateHistoricalData(request):
             end_date = TODAY_DATE
 
         last_obj = HistoricalData.objects.filter(company=id).order_by('date').last()
-        # last_obj.date = last_obj.date- timedelta(days=2)
         if last_obj is None:
             start_date = date(2007, 1, 1)
             pass
         else:
             last_obj_date = last_obj.date.date()
             print(last_obj_date)
-            # current_date = TODAY_DATE
-            # print(current_date)
-            ed = last_obj.date.strftime("%A")
-            print(ed)
-            # hist = yf.download(ticker, start=start_date, end=end_date)
-            if ed == 'Friday' and last_obj_date == TODAY_DATE:
+            day_in_word = last_obj.date.strftime("%A")
+            print(day_in_word)
+            if day_in_word == 'Friday' and last_obj_date == TODAY_DATE:
                 print(f"1.Already Upto Date no need to update")
                 pass
-            elif ed == 'Friday' and last_obj_date + timedelta(days=1) == TODAY_DATE:
+            elif day_in_word == 'Friday' and last_obj_date + timedelta(days=1) == TODAY_DATE:
                 print(f"2.Already Upto Date no need to update")
                 pass
-            elif ed == 'Friday' and last_obj_date + timedelta(days=2) == TODAY_DATE:
+            elif day_in_word == 'Friday' and last_obj_date + timedelta(days=2) == TODAY_DATE:
                 print(f"3.Already Upto Date no need to update")
                 pass
             else:
                 start_date = last_obj_date + timedelta(days=1)
 
         if start_date >= end_date:
-            print('start=', start_date, 'end=', end_date)
+            print('start=', start_date, 'end=', end_date, 'Ticker=', ticker)
             print(f"4.Already Upto Date no need to update")
             pass
 
@@ -793,202 +802,38 @@ def BulkCreateHistoricalData(request):
             # print(start_date)
             print('start=', start_date, 'end=', end_date)
             try:
+                hist = yf.download(ticker, start=start_date, end=end_date,proxy=PROXIES)
+            except:
                 hist = yf.download(ticker, start=start_date, end=end_date)
-                hist['Date'] = hist.index
-                hist['company_id'] = id
-                hist['ticker'] = ticker
-                hist = hist[['Date', 'Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume', 'company_id', 'ticker']]
-                hist = hist.dropna(
-                    subset=['Date', 'Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume', 'company_id', 'ticker'])
-                print(hist)
-                datas = hist.values.tolist()
 
-                bulkdata = []
-                for data in datas:
-                    obj = HistoricalData(
-                        is_deleted=False,
-                        deleted_at=None,
-                        date=data[0],
-                        open=data[1],
-                        high=data[2],
-                        low=data[3],
-                        close=data[4],
-                        adj_close=data[5],
-                        volume=data[6],
-                        company_id=data[7])
-                    bulkdata.append(obj)
-                    print(obj)
-                    # obj.save()
-                HistoricalData.objects.bulk_create(bulkdata)
-            except:
-                print("error")
-                pass
+            hist['date'] = hist.index
+            hist['company_id'] = id
+            hist.columns = map(str.lower, hist.columns)
+            hist.columns = hist.columns.str.replace(' ','_')
+            # hist['ticker'] = ticker
+            hist = hist[['date', 'open', 'high', 'low', 'close', 'adj_close', 'volume', 'company_id']]
+            hist = hist.dropna(
+                subset=['date', 'open', 'high', 'low', 'close', 'adj_close', 'volume', 'company_id'])
+            print(hist)
+            datas = hist.to_records(index=False)
 
-    return redirect(reverse('stocks:historicaldata_list'))
-
-
-def BulkCreateNSEHistorical(request):
-    ticker_list = StockMap.objects.filter(is_portfolio_stock=True).order_by('id').values_list('id', 'nse_symbol')
-    ticker_list = ticker_list
-    for i, (id, ticker) in enumerate(ticker_list):
-
-        start_date = None
-        end_date = None
-        if TODAY_DATETIME < MARKET_CLOSE_DATETIME:
-            end_date = TODAY_DATE - timedelta(days=1)
-        else:
-            end_date = TODAY_DATE
-
-        last_obj = NSEHistorical.objects.filter(symbol=id).order_by('date').last()
-        # last_obj.date = last_obj.date- timedelta(days=2)
-        if last_obj is None:
-            start_date = date(2007, 1, 1)
-            pass
-        else:
-            last_obj_date = last_obj.date
-            # print(last_obj_date)
-            # current_date = TODAY_DATE
-            # print(current_date)
-            ed = last_obj.date.strftime("%A")
-            print(ed)
-            # hist = yf.download(ticker, start=start_date, end=end_date)
-            if ed == 'Friday' and last_obj_date == TODAY_DATE:
-                print(f"1.Already Upto Date no need to update")
-                pass
-            elif ed == 'Friday' and last_obj_date + timedelta(days=1) == TODAY_DATE:
-                print(f"2.Already Upto Date no need to update")
-                pass
-            elif ed == 'Friday' and last_obj_date + timedelta(days=2) == TODAY_DATE:
-                print(f"3.Already Upto Date no need to update")
-                pass
-            else:
-                start_date = last_obj_date + timedelta(days=1)
-        print('start=', start_date, 'end=', end_date)
-        if start_date >= end_date:
-            print(f"4.Already Upto Date no need to update")
-            pass
-        else:
-            print('-----------------------------------------------------------')
-            print(f'Downloading data for {ticker}')
-            try:
-                hist = get_history(symbol=ticker, start=start_date, end=end_date)
-                hist['Date'] = hist.index
-                hist['symbol_id'] = id
-                hist['ticker'] = ticker
-                hist = hist[
-                    ['Date', 'Symbol', 'Prev Close', 'Open', 'High', 'Low', 'Last', 'Close', 'Volume',
-                     'Deliverable Volume',
-                     '%Deliverble']]
-                hist = hist.dropna(
-                    subset=['Date', 'Prev Close', 'Open', 'High', 'Low', 'Last', 'Close', 'Volume',
-                            'Deliverable Volume',
-                            '%Deliverble'])
-                print(hist)
-                if hist.empty:
-                    pass
-                else:
-                    datas = hist.values.tolist()
-                    for data in datas:
-                        obj = NSEHistorical(
-                            is_deleted=False,
-                            deleted_at=None,
-                            date=data[0],
-                            symbol=StockMap.objects.get(nse_symbol=ticker),
-                            prv_close=data[2],
-                            open=data[3],
-                            high=data[4],
-                            low=data[5],
-                            last=data[6],
-                            close=data[7],
-                            volume=data[8],
-                            deliverable_volume=data[9],
-                            deliverble_per=data[10])
-
-                        print(obj)
-                        obj.save()
-            except:
-                print("error")
-                pass
-
-    return redirect(reverse('stocks:historicaldata_list'))
-
-
-def BulkCreateNSEBhavcopy(requests):
-    # file = f'C:\\Users\\raj\\Desktop\\stocks_marketcap.csv'
-    # with open(file, 'r') as f:
-    #     csvreader = csv.reader(f)
-    #     fields = next(csvreader)
-    #     for row in csvreader:
-    #         obj = MarketCap(market_cap=row[3],is_deleted = False,deleted_at = None)
-    #         print(obj)
-    #         obj.save()
-    #
-    # file = f'C:\\Users\\raj\\Desktop\\stocks_sector.csv'
-    # with open(file, 'r') as f:
-    #     csvreader = csv.reader(f)
-    #     fields = next(csvreader)
-    #     for row in csvreader:
-    #         obj = Sector(sector=row[3], is_deleted=row[1], deleted_at=None)
-    #         print(obj)
-    #         obj.save()
-    #
-    #
-    #
-    # file = f'C:\\Users\\raj\\Desktop\\stocks_stockmap.csv'
-    # with open(file, 'r') as f:
-    #     csvreader = csv.reader(f)
-    #     fields = next(csvreader)
-    #     for row in csvreader:
-    #         # print(row[8])
-    #         obj = StockMap(name=row[3],nse_symbol=row[4],moneycontrol_symbol=row[5],
-    #                      yahoo_symbol=row[6],scrip_code=row[7],is_portfolio_stock=row[8],
-    #                      m_cap_id=row[9],sector_id=row[10],is_deleted=False, deleted_at=None)
-    #         print(obj)
-    #         obj.save()
-    #
-    # file = f'C:\\Users\\raj\\Desktop\\stocks_stockdata.csv'
-    # with open(file, 'r') as f:
-    #     csvreader = csv.reader(f)
-    #     fields = next(csvreader)
-    #     for row in csvreader:
-    #         # print(row[8])
-    #         obj = StockData(date=row[3],side=row[4],quantity=row[5],
-    #                      price=row[6],trade_num=row[7],company_id=row[8],
-    #                      is_deleted=row[1], deleted_at=None)
-    #         print(obj)
-    #         obj.save()
-
-    PREVIOUS_DAY = TODAY_DATE - timedelta(days=1)
-    ticker_list = StockMap.objects.filter(is_portfolio_stock=True).order_by('id').values_list('id', 'nse_symbol')
-    bhavcopy = get_price_list(dt=TODAY_DATE)
-    print(bhavcopy)
-    for i, (id, comp) in enumerate(ticker_list):
-        last_obj = HistoricalData.objects.filter(company=id).order_by('date').last()
-        if last_obj.date.date() == TODAY_DATE:
-            print(f'Already updated {comp}')
-            pass
-        else:
-            bdf = bhavcopy.loc[bhavcopy['SYMBOL'] == comp]
-            if bdf.empty:
-                pass
-            else:
-                data = bdf.values.tolist()
-                data = data[0]
-                print(data)
-
-                lastobj = HistoricalData(
+            bulkdata = []
+            for data in datas:
+                obj = HistoricalData(
                     is_deleted=False,
                     deleted_at=None,
-                    company=StockMap.objects.get(nse_symbol=comp),
-                    date=TODAY_DATE,
-                    open=data[2],
-                    high=data[3],
-                    low=data[4],
-                    close=data[5],
-                    adj_close=data[5],
-                    volume=data[8])
-                lastobj.save()
-                print(lastobj)
+                    date=data.date,
+                    open=data.open,
+                    high=data.high,
+                    low=data.low,
+                    close=data.close,
+                    adj_close=data.adj_close,
+                    volume=data.volume,
+                    company_id=data.company_id)
+                bulkdata.append(obj)
+                print(obj)
+                # obj.save()
+            HistoricalData.objects.bulk_create(bulkdata)
     return redirect(reverse('stocks:historicaldata_list'))
 
 
@@ -1077,12 +922,15 @@ def bulkCreateStockData(request):
 
     for row in sheet.iter_rows(min_row=2, values_only=True):
         print(row)
-        spread_date = row[0].strip()
-        spread_time = row[9].strip()
+        spread_date = row[0]
+        spread_time = row[9]
         date_time = f'{spread_date} {spread_time}'
-        parsed_date = datetime.strptime(date_time, "%d/%m/%Y %H:%M:%S")
+        # print(date_time)
+        parsed_date = datetime.strptime(date_time, "%d-%m-%Y %H:%M:%S")
+        # print(parsed_date)
         price = str_to_float(row[12].strip())
         comp_name = row[1].strip()
+        print(comp_name)
         obj = StockData(
             is_deleted=False,
             deleted_at=None,
@@ -1116,18 +964,18 @@ def export_data_csv(request):
                                 average_price=Sum(F('price') * F('side') * F('quantity')) / Sum(
                                     F('quantity') * F('side')))
 
-    nsedata_subqs = NSEData.objects.filter(symbol=OuterRef("pk"))
+    nsedata_subqs = NSEBhavcopy.objects.filter(symbol=OuterRef("pk"))
 
     queryset = StockMap.objects.filter(is_portfolio_stock=True).annotate(
         qty_sum=Subquery(stockdata_subqs.values('qty_sum')),
         price_sum=Subquery(stockdata_subqs.values('price_sum')[:1]),
         average_price=Subquery(stockdata_subqs.values('average_price')[:1]),
-        close=Subquery(nsedata_subqs.values('lastprice')[:1]),
+        close=Subquery(nsedata_subqs.values('close')[:1]),
         date=Subquery(nsedata_subqs.values('date')[:1]),
-        w52_high=Subquery(nsedata_subqs.values('yearhigh')[:1]),
-        w52_low=Subquery(nsedata_subqs.values('yearlow')[:1]),
+        w52_high=Subquery(nsedata_subqs.values('w52_high')[:1]),
+        w52_low=Subquery(nsedata_subqs.values('w52_low')[:1]),
         change=Subquery(nsedata_subqs.values('change')[:1]),
-        pchange=Subquery(nsedata_subqs.values('pchange')[:1]),
+        pchange=Subquery(nsedata_subqs.values('perchange')[:1]),
         per_down=F('close') * 100 / F('w52_high') - 100,
         today_value=F('close') * F('qty_sum'),
         profit=F('today_value') - F('price_sum')
@@ -1148,7 +996,7 @@ def export_data_csv(request):
     queryset = queryset.annotate(portweight=F('price_sum') * 100 / F('total_investment'),
                                  profit_percentage=F('today_value') * 100 / F('price_sum') - 100)
 
-    datalist = queryset.values('name', 'nse_symbol', 'sector__sector', 'm_cap__market_cap', 'qty_sum',
+    datalist = queryset.values('name', 'nse_symbol', 'sector__sector', 'm_cap__name', 'qty_sum',
                                'average_price', 'price_sum', 'today_value', 'profit', 'close', 'w52_high', 'w52_low',
                                'change', 'pchange', 'per_down', 'profit_percentage', 'portweight', 'date')
 

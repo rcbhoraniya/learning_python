@@ -3,5 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/signalgenui" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/toris-nuxt" vcs="Git" />
   </component>
 </project>

@@ -11,12 +11,13 @@ urlpatterns = [
     path('sector-analysis/', views.SectorAnalysis.as_view(), name='sector_analysis'),
     path('market-cap-analysis/', views.MarketCapAnalysis.as_view(), name='marketcap_analysis'),
     path('search/', views.SearchView.as_view(), name='search'),
+    path('stock_hist_search/', views.StockHistSearchView.as_view(), name='stock_hist_search'),
     path('refresh-price/', views.refresh_price_data, name='refresh_price'),
 
     path('bulk_create/', views.BulkCreateHistoricalData, name='bulk_create_historicaldata'),
     path('bulk_stockdata/', views.bulkCreateStockData, name='bulk_create_stockdata'),
-    path('bulk_nsehist/', views.BulkCreateNSEHistorical, name='bulk_create_nsehist'),
-    path('bulk_bhavcopy/', views.BulkCreateNSEBhavcopy, name='bulk_create_bhavcopy'),
+    # path('bulk_nsehist/', views.BulkCreateNSEHistorical, name='bulk_create_nsehist'),
+    # path('bulk_bhavcopy/', views.BulkCreateNSEBhavcopy, name='bulk_create_bhavcopy'),
     path('export/', views.export_data_csv, name='exportcsv'),
 
     path('stockmap-list/', views.StockMapListView.as_view(), name='stockmap_list'),

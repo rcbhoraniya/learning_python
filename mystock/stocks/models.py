@@ -29,10 +29,10 @@ class SoftDeleteModel(models.Model):
 
 
 class MarketCap(SoftDeleteModel):
-    name = models.CharField(max_length=15, unique=True)
+    m_cap_name = models.CharField(max_length=15, unique=True)
 
     def __str__(self):
-        return str(self.name)
+        return str(self.m_cap_name)
 
     def get_absolute_url(self):
         return reverse('stocks:marketcap_detail', kwargs={'pk': self.pk})
@@ -130,30 +130,6 @@ class HistoricalData(SoftDeleteModel):
         return reverse('stocks:historicaldata_detail', kwargs={'pk': self.pk})
 
 
-class NSEHistorical(SoftDeleteModel):
-    symbol = models.ForeignKey(StockMap, on_delete=models.SET_NULL, null=True)
-    date = models.DateField()
-    open = models.DecimalField(max_digits=12, decimal_places=2)
-    high = models.DecimalField(max_digits=12, decimal_places=2)
-    low = models.DecimalField(max_digits=12, decimal_places=2)
-    close = models.DecimalField(max_digits=12, decimal_places=2)
-    prv_close = models.DecimalField(max_digits=12, decimal_places=2)
-    last = models.DecimalField(max_digits=12, decimal_places=2)
-    volume = models.BigIntegerField()
-    deliverable_volume = models.BigIntegerField()
-    deliverble_per = models.DecimalField(max_digits=12, decimal_places=2)
-
-
-    class Meta:
-        ordering = ('date',)
-
-    def __str__(self):
-        return str(self.symbol)
-
-    def get_absolute_url(self):
-        return reverse('stocks:nsehistorical_detail', kwargs={'pk': self.pk})
-
-
 class NSEBhavcopy(SoftDeleteModel):
     symbol = models.OneToOneField(StockMap, on_delete=models.SET_NULL, null=True)
     date = models.DateTimeField()
@@ -161,10 +137,14 @@ class NSEBhavcopy(SoftDeleteModel):
     high = models.DecimalField(max_digits=12, decimal_places=2)
     low = models.DecimalField(max_digits=12, decimal_places=2)
     close = models.DecimalField(max_digits=12, decimal_places=2)
-    prv_close = models.DecimalField(max_digits=12, decimal_places=2)
-    last = models.DecimalField(max_digits=12, decimal_places=2)
+    adj_close = models.DecimalField(max_digits=12, decimal_places=2)
     volume = models.BigIntegerField()
-    isin = models.CharField(max_length=14, null=True)
+    w52_high = models.DecimalField(max_digits=12, decimal_places=2)
+    w52_low = models.DecimalField(max_digits=12, decimal_places=2)
+    prv_day_close = models.DecimalField(max_digits=12, decimal_places=2)
+    change = models.DecimalField(max_digits=12, decimal_places=2)
+    perchange=models.DecimalField(max_digits=12, decimal_places=2)
+
     class Meta:
         ordering = ('date',)
 
@@ -173,31 +153,5 @@ class NSEBhavcopy(SoftDeleteModel):
 
     def get_absolute_url(self):
         return reverse('stocks:nsebhavcopy_detail', kwargs={'pk': self.pk})
-
-
-class NSEData(SoftDeleteModel):
-    symbol = models.ForeignKey(StockMap, on_delete=models.SET_NULL, null=True)
-    date = models.DateTimeField()
-    open = models.DecimalField(max_digits=12, decimal_places=2)
-    dayhigh = models.DecimalField(max_digits=12, decimal_places=2)
-    daylow = models.DecimalField(max_digits=12, decimal_places=2)
-    lastprice = models.DecimalField(max_digits=12, decimal_places=2)
-    previousclose = models.DecimalField(max_digits=12, decimal_places=2)
-    change = models.DecimalField(max_digits=12, decimal_places=2)
-    pchange = models.DecimalField(max_digits=12, decimal_places=2)
-    yearhigh = models.DecimalField(max_digits=12, decimal_places=2)
-    yearlow = models.DecimalField(max_digits=12, decimal_places=2)
-    totaltradedvolume = models.IntegerField()
-    perchange365d = models.DecimalField(max_digits=12, decimal_places=2,null=True)
-    perchange30d = models.DecimalField(max_digits=12, decimal_places=2,null=True)
-    dayendclose = models.DecimalField(max_digits=12, decimal_places=2, null=True)
-    corporate_action = models.CharField(max_length=100, null=True)
-    x_date = models.DateTimeField(null=True)
-
-    class Meta:
-        ordering = ('symbol',)
-
-    def __str__(self):
-        return str(self.symbol)
 
 

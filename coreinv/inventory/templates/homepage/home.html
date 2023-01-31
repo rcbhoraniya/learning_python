@@ -11,10 +11,10 @@
 <canvas id="myChart" width="400" height="100"></canvas>
 <div class="row">
     <div class="col-md-6 mb-2">
-        <a href="{% url 'inventory:new-sales' %}" class="btn btn-info">New Outgoing Stock</a>
+        <a href="{% url 'sales:new-sales' %}" class="btn btn-info">Add New Sale</a>
     </div>
     <div class="col-md-6 mb-2">
-        <a href="{% url 'inventory:new-purchase' %}" class="btn btn-info">New Incoming Stock</a>
+        <a href="{% url 'purchase:new-purchase' %}" class="btn btn-info">Add New Purchase</a>
     </div>
 </div>
 <br>
@@ -30,7 +30,7 @@
                     Purchased by {{ item.customer.name }} <br>
                     Date:<small>{{ item.date|date:'d/m/Y' }}</small><br>
                 </div>
-                <div class="col">Rs. {{ item.get_total_price }} <a href="{% url 'inventory:salesbill_viewer' item.invoice_number %}" class="btn btn-primary btn-sm">View Bill</a></div>
+                <div class="col">Rs. {{ item.get_total_price }} <a href="{% url 'sales:salesbill_viewer' item.id %}" class="btn btn-primary btn-sm">View Bill</a></div>
             </div><br>
             {% endfor %}
         </div>
@@ -45,7 +45,7 @@
                     Purchased from {{ item.supplier.name }} <br>
                     Date:<small>{{ item.date|date:'d/m/Y' }}</small><br>
                 </div>
-                <div class="col">Rs. {{ item.get_total_price }} <a href="{% url 'inventory:purchasebill_viewer' item.invoice_number %}" class="btn btn-primary btn-sm">View Bill</a></div>
+                <div class="col">Rs. {{ item.get_total_price }} <a href="{% url 'purchase:purchasebill_viewer' item.id %}" class="btn btn-primary btn-sm">View Bill</a></div>
             </div><br>
             {% endfor %}
         </div>
@@ -59,10 +59,10 @@
     const myChart = new Chart(ctx, {
     type: 'bar',
     data: {
-        labels:[{%for data in stock%}'{{data.product.name}}',{%endfor%}],
+        labels:[{%for data in inventory%}'{{data.product.name}}',{%endfor%}],
         datasets: [{
-            label: '# of Votes',
-            data: [{%for data in stock%}{{data.quantity}},{%endfor%}],
+            label: '# Inventory',
+            data: [{%for data in inventory%}{{data.current_stock}},{%endfor%}],
             backgroundColor: [
                 'rgba(255, 99, 132, 0.2)',
                 'rgba(54, 162, 235, 0.2)',

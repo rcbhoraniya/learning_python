@@ -21,7 +21,7 @@
         {% for data in stock_marketcap %}
         <tr>
             <th>{{forloop.counter}}</th>
-            <td>{{data.name|intcomma}}</td>
+            <td>{{data.m_cap_name|intcomma}}</td>
             <td>{{data.m_cap_sum|floatformat:2|intcomma}}</td>
             <td>{{ data.weight|floatformat:2}}</td>
         </tr>
