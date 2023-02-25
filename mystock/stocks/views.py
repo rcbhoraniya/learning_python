@@ -52,7 +52,7 @@ class UserAccessMixin(PermissionRequiredMixin, LoginRequiredMixin):
         if not request.user.is_authenticated:
             return redirect_to_login(request.get_full_path(), self.get_login_url(), self.get_redirect_field_name())
         if not self.has_permission():
-            return redirect('toris:permissiondenied')
+            return redirect('stocks:permissiondenied')
         return super(UserAccessMixin, self).dispatch(request, *args, **kwargs)
 
 
@@ -822,13 +822,13 @@ def BulkCreateHistoricalData(request):
                 obj = HistoricalData(
                     is_deleted=False,
                     deleted_at=None,
-                    date=data.date,
+                    date=pd.to_datetime(data.date),
                     open=data.open,
                     high=data.high,
                     low=data.low,
                     close=data.close,
                     adj_close=data.adj_close,
-                    volume=data.volume,
+                    volume=int(data.volume),
                     company_id=data.company_id)
                 bulkdata.append(obj)
                 print(obj)
